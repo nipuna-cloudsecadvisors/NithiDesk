@@ -1,0 +1,43 @@
+# Local environment — never commit real values
+.env
+.env.*
+!.env.example
+
+# Secrets and keys (defence in depth; CI also runs a secret scan)
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+
+# Build output
+/bin/
+/dist/
+/web/dist/
+/web/dev-dist/
+*.exe
+*.test
+*.out
+
+# Dependencies
+node_modules/
+/web/node_modules/
+
+# Go
+/vendor/
+coverage.out
+coverage.html
+
+# Local data volumes and backup artefacts
+/.data/
+/backups/
+*.dump
+*.sql.gz
+*.sql.age
+
+# Agent/editor runtime state (materialised per machine, not source)
+.claude/skills/
+.claude/settings.local.json
+.DS_Store
+.idea/
+.vscode/
