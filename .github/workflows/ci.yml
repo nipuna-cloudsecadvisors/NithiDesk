@@ -1,0 +1,62 @@
+name: CI
+
+# Runs on the firm's self-hosted runner (label: nithidesk).
+# The repository is public: fork pull requests must never run on this machine.
+# The `if:` guards below are defence in depth only; the real control is the repo
+# setting "Require approval for all external contributors" (Settings → Actions).
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  docs:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: [self-hosted, nithidesk]
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Check planning docs (links, Mermaid fences, markers)
+        shell: bash
+        run: python -I -X utf8 .github/scripts/check_docs.py .
+
+  go:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: [self-hosted, nithidesk]
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Detect Go module
+        id: detect
+        shell: bash
+        run: echo "present=$([ -f go.mod ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-go@v5
+        if: steps.detect.outputs.present == 'true'
+        with:
+          go-version-file: go.mod
+      - name: Vet
+        if: steps.detect.outputs.present == 'true'
+        shell: bash
+        run: go vet ./...
+      - name: Build
+        if: steps.detect.outputs.present == 'true'
+        shell: bash
+        run: go build ./...
+      # -race needs cgo and a C toolchain, which the Windows runner lacks.
+      - name: Test
+        if: steps.detect.outputs.present == 'true'
+        shell: bash
+        run: go test -count=1 ./...
