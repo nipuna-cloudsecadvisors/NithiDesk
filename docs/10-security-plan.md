@@ -33,7 +33,7 @@ Standards to align with: **OWASP ASVS (Level 2 target, selected Level 3 controls
 | Supplier / cloud | Hosting or AI provider misuse | Encryption, contractual controls, data residency decision, AI data minimisation |
 | Opposing party social engineering | Calls clerk asking for next date | Process training; client-visibility flags; no public lookups |
 
-A formal threat model (STRIDE per module) is a Phase 0 engineering deliverable.
+The detailed STRIDE threat model (Phase 0) is in [security/threat-model.md](security/threat-model.md).
 
 ---
 
