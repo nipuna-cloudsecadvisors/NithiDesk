@@ -81,6 +81,10 @@ Per doc 16. Go-live = NithiDesk becomes the diary of record.
 
 As in doc 17 §2.2–2.3. Re-prioritise with pilot feedback; do not pre-commit order beyond Phase 2.
 
+### Future (unscheduled)
+
+As in doc 17 §2.4: e-filing and filing/payment status, accounting integration, multi-firm SaaS operations, Tamil UI/OCR, native apps, live document editing, AI document comparison and translation. Each is pulled into a phase only through a decision gate.
+
 ---
 
 ## 3. Module dependencies
@@ -123,7 +127,7 @@ Note: M1 deliberately builds a **thin slice** of Registry/Matters/Proceedings so
 
 | Gate | Before | Decisions |
 |---|---|---|
-| G0 | Any production code | Doc 20 "before coding" answers; ADRs; tenancy; hosting/residency; auth approach |
+| G0 | Any production code (M1 feature work; Phase 0 spikes and a throwaway scaffold are allowed if kept separate) | Doc 20 "before coding" answers; ADRs; tenancy; hosting/residency; auth approach |
 | G1 | M2 | Conflict policy, approval levels, ethical wall practice |
 | G2 | M3 | Document taxonomy, retention classes, confidentiality defaults |
 | G3 | Go-live | Migration verification complete, pentest, restore drill, cut-over criteria |

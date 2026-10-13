@@ -27,7 +27,7 @@ Two-level taxonomy, **[MAKE CONFIGURABLE]**, bilingual labels:
 | Correspondence | Letters to/from client, letters to/from opposing counsel, letters to/from registry/authorities, emails (filed), WhatsApp exports | Standard | Communication, matter |
 | Agreements & transactional | Contracts, settlement agreements, deeds of transfer, leases (conveyancing matters) | Standard | Matter |
 | Internal | Internal notes, legal research, draft opinions, strategy memos, counsel's opinion | **Privileged-internal** (never client-visible, never external counsel unless shared) | Matter |
-| Finance (Phase 2) | Fee notes, receipts, court fee receipts | Finance-only | Matter |
+| Finance (Phase 2) | Fee notes, receipts, court fee receipts | Restricted (finance roles + matter partner) | Matter |
 | Other | Anything else (must still pick a group) | Standard | |
 
 ---
@@ -53,6 +53,7 @@ Two-level taxonomy, **[MAKE CONFIGURABLE]**, bilingual labels:
 | Uploaded by / at; source channel | Web, mobile camera, email-in (later), import, connector |
 | Processing status | Quarantined → Scanned clean / Rejected → OCR pending/done/failed → Indexed |
 | OCR text + confidence | Per page where available; language detected |
+| Searchability | Derived: `Metadata only` · `Text indexed` · `OCR indexed (low confidence)`, shown on the document so users know whether a content search could have missed it. Highly restricted documents are indexed, but only named users can find them (§8.3) |
 | Page count | |
 | Retention class | Inherited from matter category; overridable by authorised user |
 | Legal hold | Inherited from matter/proceeding hold or set on the document |
@@ -179,6 +180,7 @@ A single search box (keyboard shortcut `/` on desktop; prominent on mobile) that
 | Matter number | Matter | `ND-2026-0142` |
 | NIC (old/new format) | Entity by NIC (exact; result shown only to roles allowed to search by NIC) | `199012345678`, `901234567V` |
 | Phone number | Entity by phone (normalised +94) | `0771234567` |
+| Court name or abbreviation (SI/EN) | Court; applied as a filter on the rest of the query | `Colombo DC`, `කොළඹ දිසා අධිකරණය` |
 | Sinhala text | Names (Sinhala + transliteration), titles, notes, document text | `පෙරේරා` |
 | Latin text | Names (Latin + transliteration to Sinhala), titles, notes, document text | `Nimal Perera` |
 

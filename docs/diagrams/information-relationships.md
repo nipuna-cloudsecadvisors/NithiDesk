@@ -2,6 +2,9 @@
 
 Conceptual only. Names are domain concepts, not table names. Attributes shown are illustrative key attributes.
 
+How the PART 30 entities appear below (see [doc 08](../08-information-model.md)):
+**Client** = `ENTITY` + `CLIENT_PROFILE` · **Party** = `PARTY_ROLE` · **Lawyer** = `USER` (firm lawyer, also an `ENTITY`) or an `ENTITY` in a `REPRESENTATION` (opposing or external counsel) · **Evidence** = `EVIDENCE_ITEM` · **Audit event** = `AUDIT_EVENT` · **Legal hold** = `LEGAL_HOLD`. Matter, Proceeding, Court, Hearing, Document, Task, Communication and Notification appear under their own names.
+
 ## 1. Core conceptual ERD
 
 ```mermaid
@@ -28,6 +31,7 @@ erDiagram
     MATTER ||--o{ COMMUNICATION : "records"
 
     COURT ||--o{ PROCEEDING : "hears (current)"
+    COURT ||--o{ HEARING : "sits for"
     PROCEEDING_TYPE ||--o{ PROCEEDING : "templates"
     PROCEEDING ||--|{ CASE_NUMBER_RECORD : "numbered (history)"
     PROCEEDING }o--o{ PROCEEDING : "appeal / revision / transfer"
@@ -57,14 +61,21 @@ erDiagram
     TASK }o--o{ TASK : "depends on"
 
     COMMUNICATION }o--o{ ENTITY : "participants"
+    COMMUNICATION }o--o{ DOCUMENT : "attachments"
 
+    USER |o--o| ENTITY : "lawyer is also"
     USER ||--o{ NOTIFICATION : "receives"
+    NOTIFICATION }o--o| HEARING : "about"
+    NOTIFICATION }o--o| TASK : "about"
     USER }o--o{ ETHICAL_WALL : "excluded by"
     ETHICAL_WALL }o--o{ MATTER : "protects"
 
+    LEGAL_HOLD }o--o{ CLIENT_PROFILE : "holds"
     LEGAL_HOLD }o--o{ MATTER : "holds"
+    LEGAL_HOLD }o--o{ PROCEEDING : "holds"
     LEGAL_HOLD }o--o{ DOCUMENT : "holds"
-    AUDIT_EVENT }o--|| USER : "actor"
+    AUDIT_EVENT }o--o| USER : "actor (or system / connector)"
+    AUDIT_EVENT }o--o| MATTER : "concerns"
 ```
 
 ## 2. Simplified "spine" view for non-technical review

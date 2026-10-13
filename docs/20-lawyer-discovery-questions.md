@@ -167,3 +167,30 @@ Covers PART 36. Use these in structured sessions with the practising Attorney-at
 | Billing not required in MVP | 17 |
 | WhatsApp recorded by reference only | 04 |
 | Retention periods TBD by lawyer | 07 |
+| Advisory/conveyancing matters exist and have no proceedings | 04 |
+
+## Items marked NEEDS LAWYER CONFIRMATION (tracked to questions)
+
+| Item | Question(s) | Doc |
+|---|---|---|
+| What counts as an authoritative date confirmation | Top 10 #1–2; §5.2 | 06 |
+| Matter vs proceeding rule for appeals, revision, writs | Top 10 #3; §3.5 | 05 |
+| Court list availability per court | §5.3 | 06, 15 |
+| Legacy Sinhala fonts in use | §6.3 | 11, 16 |
+| Current state of Sri Lankan court digital services | §8.1 (plus owner research) | 15 |
+| Whether clients want automated reminders | §12.4 | 13 |
+| Judge analytics / judges' names sensitivity | §3.8 | 14 |
+| Acceptable downtime and fallback | §7 (add to session) | 19 |
+
+## Configurable decisions (default proposed, firm may change)
+
+| Decision | Proposed default | Doc |
+|---|---|---|
+| Whether a date written down in court by the appearing lawyer counts as verified | No — clerk verifies | 06, 17 §7 |
+| Who approves conflicts, engagement, client updates, closure | Responsible partner (one level) | 17 §7 |
+| Clerk scope | "Diary scope" (hearing metadata, not substance) firm-wide; masked for Restricted, date/court/number only for Highly restricted; firm may limit to assigned courts | 09 §2.1 |
+| Notification escalation timings, digest times, quiet/court hours | As doc 13 §3 | 13 |
+| Parallel-run length | 6 weeks | 16 §4.2 |
+| Client names in emails/push | Off | 13 §1 |
+| Matter numbering pattern | ND-YYYY-NNNN | 17 §7 |
+| Retention class per matter category | Lawyer to set | 07 |

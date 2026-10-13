@@ -32,6 +32,19 @@ Covers PART 29.
 | **E. Leave in place / paper** | Old paper files of closed matters; originals | Physical file register (box/location) entries only | — |
 | **F. Do not migrate** | Duplicates, personal notes unrelated to matters, data without purpose, expired retention data (after lawyer approval) | — | Lawyer decision |
 
+### 2.1 Source → class matrix
+
+| Source | Migrate (A/B/C) | Archive (D/E) | Manual verification |
+|---|---|---|---|
+| Physical court diary | **A** — all future hearings; past 6–12 months of entries for active matters as hearing history (**[MAKE CONFIGURABLE]** depth) | Scan the old diaries as read-only PDFs (E-style reference) | Every future date (§3) |
+| Paper case files | **B** — key documents for active matters | **E** — physical file register entries for closed files | Lawyer spot-check of "last order" |
+| Excel sheets | **A** — clients, matters, proceedings, parties; **C** — closed-matter parties | Original spreadsheets kept read-only as import evidence | Duplicates, case numbers, matter ↔ proceeding grouping |
+| Word documents | **B** — current drafts and filed pleadings of active matters | **D** — the rest | Legacy-font conversion sample |
+| Shared folders / Google Drive / OneDrive | **B** — selected per active matter | **D** — bulk, read-only, by folder | Folder → matter mapping confirmed by assistant |
+| Email | Selectively saved to the matter as communications/documents (by forwarding or upload) — **no bulk mailbox import** | Mailboxes stay in the firm's email system | Lawyer chooses what is part of the matter record |
+| WhatsApp | Not migrated; important instructions re-recorded as communication-log entries with reference (doc 04 §7) | Stays on devices | Lawyer judgement |
+| Personal notebooks / phones | Reconcile dates into A | — | Clerk reconciliation against the diary |
+
 ---
 
 ## 3. What requires manual verification
@@ -95,3 +108,12 @@ flowchart TD
 - Spreadsheets with NIC/client data deleted from temporary locations after import (with lawyer approval).
 - Migration staff under confidentiality obligations.
 - Migration activity logged.
+- Cloud-drive exports (Google Drive/OneDrive) taken by the firm's own account holders; NithiDesk staff do not receive the firm's cloud credentials.
+
+---
+
+## 7. Rollback and failure handling
+
+- Each batch can be rolled back until any record in it is modified; after that, corrections are made record by record (audited).
+- If the parallel run shows discrepancies, cut-over is postponed — the paper diary stays the diary of record until the criteria in §4.2 are met.
+- A frozen copy of every source file used for import is retained (encrypted, access-restricted) until the post-go-live review, then disposed of per lawyer instruction.

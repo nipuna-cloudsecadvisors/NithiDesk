@@ -12,7 +12,7 @@ Covers PART 12 (court-day mode), PART 24 (mobile), PART 25 (offline), PART 32 (n
 2. **Two taps to any of today's cases.** Today → case.
 3. **Read first, write little.** Most court-day actions are reading; writing is quick structured capture.
 4. **Big targets, high contrast, status icons + words** (never colour alone).
-5. **Silent by default during court hours** — no sounds; badges only (**[MAKE CONFIGURABLE]**).
+5. **Silent by default during court hours** — no sounds; badges only (**[MAKE CONFIGURABLE]**). Web push arrives in Phase 2 (doc 17). Until then, mobile alerts are in-app plus email.
 6. **Lightweight**: initial load small; works on mid-range Android phones on 3G/4G. **[ASSUMPTION]** most lawyers use Android; iOS must still work well.
 7. **Sinhala-first capable**: long Sinhala labels wrap cleanly.
 
@@ -92,8 +92,8 @@ Order of information (top = most important), all on one scrollable screen, no ta
 
 1. **Header:** case number (large, copyable) · court · courtroom · verification badge · time/session.
 2. **Today's objective:** purpose + senior's instructions (highlighted).
-3. **Parties:** our client (side/role) · opposing party(ies) · opposing counsel.
-4. **Current stage** (specific + generic).
+3. **Client and parties:** our client by name, with side and role (e.g. "Client: K. Perera — 1st Defendant") · opposing party(ies) · opposing counsel.
+4. **Current status:** proceeding stage (specific + generic) · today's listing status · matter attention flags (e.g. "client unreachable", "fees outstanding" if billing is enabled).
 5. **Last hearing:** date, outcome, order/direction text (expand for full).
 6. **Key documents** (flagged for this hearing): tap to preview; missing ones shown as red placeholders.
 7. **Key evidence** (marked items with status).
@@ -102,7 +102,9 @@ Order of information (top = most important), all on one scrollable screen, no ta
 10. **Previous case numbers / related proceedings** (collapsed).
 11. **Client contact** (tap to call/WhatsApp — via the phone's apps; logged as a communication prompt afterwards).
 
-Sticky bottom action bar: **[Record outcome]** **[Note]** **[📷]** **[Task]** **[⋯]** (⋯ = request client contact, mark document required, flag issue).
+Sticky bottom action bar: **[Record outcome]** **[Note]** **[📷]** **[Task]** **[⋯]** (⋯ = request client contact, upload from files, mark document required, flag issue).
+
+Every PART 12 quick action is one tap from the case card: record outcome and next date (one form, §3.4) · add note · upload document (📷 camera, or ⋯ → from files) · create task · request client contact (§3.5).
 
 ### 3.4 Record outcome — quick form
 
@@ -169,11 +171,12 @@ Each "✓ On list" records source = Official court list (date), optionally with 
 |---|---|
 | Creation | User taps "Prepare today's court pack" (or auto-offer at a configured time, e.g. 6:30 a.m. on Wi-Fi) |
 | Contents | Only the user's hearings for today (and optionally tomorrow): case card data, last outcome, instructions, notes, tasks, **flagged key documents only** (size cap, e.g. 50 MB) |
+| Selection | Documents flagged for the hearing are pre-selected. The user can untick them or add other documents they are allowed to download, within the cap and policy exclusions. Each document in the pack is listed in the audit event |
 | Excluded | Other matters; privileged-internal documents unless explicitly flagged and allowed by policy; Highly restricted matters (**[MAKE CONFIGURABLE]**, default excluded) |
 | Storage | Browser storage (IndexedDB/Cache) **encrypted** with a key derived per session; key held only in memory/secure storage, requiring device unlock/PIN to reopen |
 | Expiry | End of the court day + grace (e.g. 23:59 or 18 hours) — auto-wipe on expiry |
 | Logout / revocation | Logout wipes immediately; admin revocation wipes on next app start; pack also unreadable without a valid session key |
-| Offline writes | Outcome, note, task, photo queued locally (encrypted), synced on reconnect; conflicts (e.g. someone else recorded the outcome) shown for manual resolution |
+| Offline writes | Outcome, note, task, photo queued locally (encrypted), synced on reconnect; conflicts (e.g. someone else recorded the outcome) shown for manual resolution. A queued outcome **survives session expiry**: after re-login (or PIN re-unlock, doc 10 §4) the same user is asked to sync it, and it is never discarded silently. Logout with unsynced items warns first, and the user can sync or explicitly discard (audited) |
 | Audit | Pack creation (which documents), wipe, sync events |
 | Device loss | User/admin revokes sessions → server rejects; local pack expires the same day regardless |
 
@@ -256,6 +259,8 @@ Each role lands on a different home. Widgets are few, actionable, and each links
 | Matters needing attention | High priority + flags; inactive > N days |
 | Workload | Hearings per lawyer this week; open tasks per lawyer |
 | New matters / closures this month | Trend |
+
+**Managing partner vs partner:** the same widgets with different scope. The managing partner sees the whole firm (all non-walled matters), plus security alerts that need a business decision and the firm-wide matter-aging report. A partner sees their own portfolio and teams.
 
 ### 7.2 Lawyer (senior/junior)
 

@@ -5,10 +5,12 @@
 ```mermaid
 flowchart LR
     E[Enquiry] --> CC[Conflict check<br/>+ human decision]
-    CC -->|cleared & engaged| M[Matter opened<br/>team assigned]
+    CC -->|cleared| ON[Engagement &<br/>client onboarding]
     CC -->|declined| X[Enquiry closed<br/>record kept]
+    ON --> M[Matter opened<br/>team assigned]
     M --> P["Proceeding(s)<br/>court · case no. · parties"]
     M --> D[Documents &<br/>evidence]
+    M -->|advisory / non-litigation| CL
     P --> H[Hearing<br/>date + source + verification]
     H --> PR[Preparation<br/>checklist · brief · documents]
     PR --> CD[Court day<br/>mobile court mode]
@@ -31,7 +33,7 @@ flowchart TB
     subgraph Core["Core domain"]
         REG[Person & Organisation<br/>registry]
         CLI[Clients &<br/>onboarding]
-        CON[Conflict<br/>checking]
+        CON[Intake &<br/>conflict checking]
         MAT[Matters]
         CRT[Court master data]
         PRO[Proceedings &<br/>parties]
@@ -54,7 +56,7 @@ flowchart TB
     subgraph Platform["Platform services"]
         IAM[Identity, MFA,<br/>sessions]
         AUTHZ[Authorisation<br/>RBAC + matter ACL + walls]
-        AUD[Audit log]
+        AUD[Audit log ·<br/>retention & legal hold]
         I18N[Localisation &<br/>Sinhala text services]
         NOTIF[Notifications]
         STORE[Object storage<br/>+ malware scan]

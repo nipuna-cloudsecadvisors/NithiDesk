@@ -158,14 +158,28 @@
 
 | Aspect | Detail |
 |---|---|
+| Responsibilities | Gives instructions; supplies documents and information; attends court when required; pays fees |
 | Needs to see | Status in plain language; next date (only once **verified and approved for client visibility**); documents explicitly shared; requests for documents |
 | Should not see | Internal notes, strategy, conflict information, other parties' confidential material, unverified dates, internal discussion, restricted documents, billing unless shared |
+| Daily actions | Occasional: check next date; upload requested documents; read updates; reply to secure messages |
 | Mobile | Primary channel (likely after WhatsApp/SMS link) |
 | Notifications | Next date confirmed; document requested; update published |
+| Approvals | None inside NithiDesk. Instructions the client gives (e.g. "appeal", "settle") are recorded by the firm as *Instruction* communications (doc 04 §7). Clients never approve anything in the system |
+
+**Before Phase 3:** clients have no login. They receive approved updates through the firm's existing channels (doc 04 §9).
 
 ### P12 — Read-only / Auditor (optional)
 
-Time-boxed, matter-scoped or firm-wide read for internal review, quality checks or an external auditor. All access audited. No downloads by default.
+| Aspect | Detail |
+|---|---|
+| Responsibilities | Internal quality review, compliance check or external audit, for a defined period and scope |
+| Needs to see | The matters or record types in the grant (matter-scoped or firm-wide read) |
+| Should not see | Anything outside the grant. Sees no data before the grant starts or after it expires |
+| Daily actions | Read and annotate review findings (outside the matter record) |
+| Mobile | None |
+| Notifications | Access granted / expiring |
+| Approvals | None. Granting this role requires managing-partner approval (**[MAKE CONFIGURABLE]**) |
+| Access controls | Time-boxed; all access audited; no downloads or exports by default |
 
 ## 4. Cross-persona needs matrix
 
