@@ -1,0 +1,36 @@
+name: Feature request
+description: Suggest a new capability or an improvement
+title: "[Feature] "
+labels: ["type:feature"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: Who has the problem (lawyer, clerk, partner, admin…) and when does it happen?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options: [Court diary / hearings, Matters & proceedings, Documents, Search, Mobile / court-day mode, Login & access, Sinhala / English, Notifications, Reports, Import / migration, Other]
+    validations:
+      required: true
+  - type: dropdown
+    id: phase
+    attributes:
+      label: Suggested phase
+      description: See docs/17-mvp-scope.md
+      options: [MVP, Phase 2, Phase 3, Future, Not sure]
+  - type: textarea
+    id: docs
+    attributes:
+      label: Related planning docs
+      placeholder: "docs/06-hearing-workflow.md §4"

@@ -19,8 +19,8 @@ Covers PART 17.
 
 | Priority | Meaning | Channels | Timing | Examples |
 |---|---|---|---|---|
-| **P1 — Critical** | Imminent risk of missed hearing/deadline or security incident | In-app banner + push + email (+ SMS Phase 2) | Immediate, bypasses quiet hours; escalates if unacknowledged | Date conflict on a hearing ≤ 2 days away; hearing tomorrow with no appearing lawyer; hard deadline due tomorrow and not done; outcome not recorded by end of hearing day (to lead, then partner next morning); ethical-wall breach attempt; break-glass used |
-| **P2 — High** | Needs action today | In-app + push | Immediate during working hours | Hearing date changed; verification overdue; conflict review assigned; client update awaiting approval; hearing reassigned to you |
+| **P1 — Critical** | Imminent risk of missed hearing/deadline or security incident | In-app banner + email (MVP); + web push and SMS (Phase 2) | Immediate, bypasses quiet hours; escalates if unacknowledged | Date conflict on a hearing ≤ 2 days away; hearing tomorrow with no appearing lawyer; hard deadline due tomorrow and not done; outcome not recorded by end of hearing day (to lead, then partner next morning); ethical-wall breach attempt; break-glass used |
+| **P2 — High** | Needs action today | In-app + email (MVP); + web push (Phase 2) | Immediate during working hours | Hearing date changed; verification overdue; conflict review assigned; client update awaiting approval; hearing reassigned to you |
 | **P3 — Normal** | Needs action soon | In-app; included in daily digest | Batched | New matter assigned; task assigned; document requested; preparation not ready at T-3 |
 | **P4 — Info** | Awareness | Daily/weekly digest only | Batched | Document uploaded to your matter; task completed by colleague; new party added |
 
@@ -39,6 +39,8 @@ Covers PART 17.
 | Outcome not recorded | Appearing lawyer (evening) → lead lawyer → partner (next morning) | P2 → P1 | Critical control |
 | Hearing without appearing lawyer (≤ 3 days) | Lead lawyer, partner | P1 | |
 | Schedule clash (same lawyer, two courts) | Lawyer, lead lawyer | P2 | |
+| Court-list check-off not done for tomorrow (by configurable evening cut-off) | Clerk → lead clerk/partner | P2 → P1 | Only where a list is available for that court |
+| Next hearing not created after outcome (proceeding not Concluded/Dormant) | Lead lawyer | P2 | Complements "outcome not recorded" |
 | Task assigned | Assignee | P3 | |
 | Task due today | Owner | Digest | |
 | Task overdue | Owner (day 1) → reviewer/lead (day 2) | P3 → P2 | Hard deadlines: P1 to owner + lead on due date morning |
@@ -52,6 +54,7 @@ Covers PART 17.
 | Access granted / wall applied to you | User | P3 | |
 | Security: new device login, MFA reset | User | P2 (email) | |
 | Admin: backup failed, scanner down, queue stuck | Admin | P1 | |
+| Notification delivery failing (email bounces, queue backlog) | Admin | P1 | A silent notification system is itself a missed-hearing risk |
 
 ---
 
@@ -64,15 +67,25 @@ Covers PART 17.
 - **User preferences**: users can lower P3/P4 channels; cannot disable P1 or escalation (**[MAKE CONFIGURABLE]** at firm level).
 - **Quiet hours**: personal quiet hours (e.g. 21:00–06:00) except P1.
 - **Measure**: track notification open/act rates in pilot; remove notifications nobody acts on.
+- **Collapse into the digest**: when a P3/P4 item is also listed in the next digest, send it once (in the digest).
+- **Suppress on resolution**: if the underlying condition clears before delivery (date verified, task done), the pending notification is withdrawn.
 
 ---
 
-## 5. Channels & providers
+## 5. Language and content of notifications
+
+- Rendered in the **recipient's preferred language** (doc 11), from message catalogues; never hardcoded strings. Dates are formatted per locale but always unambiguous (e.g. "අඟහරුවාදා 24 නොවැම්බර් / Tuesday 24 November").
+- Case numbers and court names use the stored canonical form; party names use the recipient's script where a variant exists.
+- Email/SMS bodies carry a link into the app, not matter content (principle 5). SMS in Sinhala costs more (UCS-2) — **[MAKE CONFIGURABLE]** SMS language per firm.
+
+---
+
+## 6. Channels & providers
 
 | Channel | Phase | Notes |
 |---|---|---|
 | In-app (bell + inbox + badges) | MVP | Source of truth |
-| Web push (PWA) | MVP-late | Android reliable; iOS push for installed PWAs only (iOS 16.4+) — **[ASSUMPTION]** acceptable |
+| Web push (PWA) | Phase 2 (aligned with doc 17 §2.2) | Android reliable; iOS push for installed PWAs only (iOS 16.4+) — **[ASSUMPTION]** acceptable |
 | Email | MVP (digests + P1/P2) | Transactional email provider; SPF/DKIM/DMARC; no confidential details by default |
 | SMS | Phase 2 | Local gateways (Sri Lankan mobile operators / aggregators); Sinhala SMS cost (UCS-2, doc 11 §10) |
 | WhatsApp Business API | Phase 3 | Only via an approved Business Solution Provider; template approval; client communications primarily |
@@ -82,6 +95,6 @@ Providers sit behind a **notification channel interface**; the domain emits even
 
 ---
 
-## 6. Client-facing notifications (later)
+## 7. Client-facing notifications (later)
 
 Clients receive only: approved updates, verified next-date reminders (client-visible flag), document requests. Every client notification is logged as a communication. **[NEEDS LAWYER CONFIRMATION]** whether the firm wants automated reminders to clients at all (some lawyers prefer personal contact).

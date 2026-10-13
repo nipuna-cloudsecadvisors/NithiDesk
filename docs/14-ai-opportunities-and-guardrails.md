@@ -12,14 +12,15 @@ Covers PART 26.
 |---|---|---|---|---|
 | 1 | **Hearing brief preparation** — assemble last order, outcome history, open tasks, key documents into a one-page brief for the appearing lawyer (much of this is *non-AI aggregation*; AI adds a narrative summary) | High: juniors covering at short notice | Medium (omissions) | Phase 3 (non-AI brief in MVP) |
 | 2 | **Court order / judgment summarisation** (Sinhala and English) with page citations | High | Medium–High (misreading orders) | Phase 3 |
+| 2a | **General document summarisation** (long pleadings, affidavits, correspondence bundles, migrated files) with page citations | Medium–High | Medium | Phase 3 (after order summaries prove reliable) |
 | 3 | **Information extraction** from uploaded documents — case number, court, parties, dates, next date from an order/summons → *pre-fill* forms for human confirmation | High: reduces data entry | Medium | Phase 3 |
 | 4 | **Permission-aware semantic search** ("last order in Perera's land case") | High | Medium (leakage if done wrong) | Phase 3 |
 | 5 | **Client-update drafting** in the client's language from the recorded outcome | Medium–High | Medium (tone, accuracy) | Phase 3 |
 | 6 | **Conflict-match assistance** — explain likely same-person matches across scripts; suggest related entities from documents | Medium | High if trusted blindly | Phase 3 |
 | 7 | **Timeline extraction** from a stack of migrated documents | Medium (migration accelerator) | Medium | Phase 3 |
 | 8 | **Missing-information detection** — "this hearing has no previous order uploaded", "plaint lists 4 defendants, only 3 recorded" | Medium | Low | Phase 3 (rule-based parts earlier) |
-| 9 | **Document comparison** (draft vs filed, amended plaint vs original) | Medium | Low–Medium | Phase 4 |
-| 10 | **Translation assistance** (Sinhala ↔ English) of documents for internal understanding | Medium | Medium (legal nuance) | Phase 4 — always labelled "unofficial machine translation" |
+| 9 | **Document comparison** (draft vs filed, amended plaint vs original) | Medium | Low–Medium | Future |
+| 10 | **Translation assistance** (Sinhala ↔ English) of documents for internal understanding | Medium | Medium (legal nuance) | Future — always labelled "unofficial machine translation" |
 
 **Not recommended:** AI legal advice, outcome prediction, automated legal research answers presented as authority, judge analytics (ethically sensitive — **[NEEDS LAWYER CONFIRMATION]**).
 
@@ -62,6 +63,9 @@ UI rules:
 | Close, reopen, archive or dispose of a matter | Lifecycle decision |
 | Provide final legal advice | Professional duty |
 | Access data outside the requesting user's permissions | Confidentiality |
+| Merge or unmerge people/organisations, or mark records as duplicates | Identity errors feed conflict checks |
+| Mark a document as filed, served or an original | Evidential status is a human attestation |
+| Create, assign or complete tasks or deadlines (it may *suggest* them) | Accountability stays with named people |
 
 ---
 
@@ -90,6 +94,12 @@ flowchart LR
 | Audit | Request (user, feature, matter, documents included, model/version), output, human decision; retention configurable |
 | Evaluation | Golden test set per feature (incl. Sinhala documents) before enabling; periodic re-evaluation on model changes |
 | Cost control | Per-firm quotas; caching of summaries per document version |
+
+---
+
+### 4.1 Audit events for AI
+
+Every AI request is audited (doc 10 §9): user, feature, matter, documents/chunks retrieved, provider and model version, output, and the human decision (accept / edit / reject). AI audit records follow the matter's retention and legal hold.
 
 ---
 

@@ -1,0 +1,42 @@
+name: Bug report
+description: Something in NithiDesk is broken or behaves wrongly
+title: "[Bug] "
+labels: ["type:bug"]
+body:
+  - type: markdown
+    attributes:
+      value: "Do not paste client names, NIC numbers, case details or other confidential information. Use placeholders."
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you saw, and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: "1. Open Today\n2. Select a hearing\n3. ..."
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options: [Court diary / hearings, Matters & proceedings, Documents, Search, Mobile / court-day mode, Login & access, Sinhala / English, Notifications, Reports, Import / migration, Other]
+    validations:
+      required: true
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: Anything that can cause a missed or wrong hearing date, or show data to the wrong person, is Critical.
+      options: [Critical — wrong/missed date or data exposure, High — blocks daily work, Medium — workaround exists, Low — cosmetic]
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: Device, browser and UI language
+      placeholder: "Android Chrome, Sinhala UI"

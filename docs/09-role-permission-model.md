@@ -51,6 +51,8 @@ Clerks need to see *every* hearing (case number, court, parties, date) to protec
 
 When a lawyer who is not on the matter is assigned to appear at a hearing (common for juniors covering), they automatically receive **time-boxed access**: the proceeding, that hearing, the previous hearing's outcome, documents flagged for the hearing/brief — from assignment until e.g. 48 hours after the hearing (**[MAKE CONFIGURABLE]**). The grant is audited, visible to the responsible partner, and blocked by any ethical wall (assignment fails with an explanation).
 
+**Phasing (aligned with doc 17):** automatic appearance grants, the break-glass workflow (§7) and external counsel accounts are **Phase 2**. In the MVP, a partner adds the covering lawyer to the matter team manually. That step is audited and wall-checked the same way.
+
 ---
 
 ## 3. Matter confidentiality levels
@@ -121,9 +123,18 @@ Legend: ✔ allowed · M within member/granted matters · D diary scope · ✖ n
 | Manage users / roles | approve | ✖ | ✖ | ✖ | ✖ | ✖ | ✖ | ✔ (execute) | ✖ |
 | Reference data (courts etc.) | ✔ | ✖ | ✖ | ✖ | ✖ | suggest | ✖ | ✔ | ✖ |
 | View security audit log | ✔ | ✖ | ✖ | ✖ | ✖ | ✖ | ✖ | ✔ | ✖ |
+| View business audit trail of a matter | ✔ | M | ✖ | ✖ | ✖ | ✖ | ✖ | ✖ | ✖ |
+| Reveal full NIC / passport | ✔ | M | M | config | config | ✖ | ✖ | ✖ | ✖ |
+| Apply / release legal hold | A | M (apply) | ✖ | ✖ | ✖ | ✖ | ✖ | ✖ | ✖ |
+| Create offline court pack (Phase 2) | ✔ | M | M | M | ✖ | D (no documents) | ✖ | ✖ | config |
+| Use AI features (Phase 3) | config | config | config | config | ✖ | ✖ | ✖ | ✖ | ✖ |
 | Break-glass access | request | request | ✖ | ✖ | ✖ | ✖ | ✖ | ✖ | ✖ |
 
 \* "all" = all non-walled matters at Standard level, subject to configuration.
+
+Finance staff (Phase 2) and clients (Phase 3) are left out of this matrix. Their capabilities are limited to billing data and the client portal respectively (§2).
+
+**Administrator and the audit log.** The system administrator reads *security* events (logins, lockouts, permission changes). Those entries identify matters by **ID only**, not by title or client name, so the audit log cannot become a way round matter access or ethical walls. *Business* audit trails of a matter, such as who viewed which document, are visible to the managing partner and to the matter's partner.
 
 ---
 

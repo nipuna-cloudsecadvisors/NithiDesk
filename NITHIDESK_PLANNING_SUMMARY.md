@@ -1,6 +1,6 @@
 # NithiDesk — Planning Summary (Management Level)
 
-> **Status:** Planning draft v0.1 for review with a practising Sri Lankan Attorney-at-Law. **No code, screens or database migrations have been created.** Detailed documents are in [`docs/`](docs/README.md).
+> **Status:** Planning draft v0.2 (gap audit 2026-10-13) for review with a practising Sri Lankan Attorney-at-Law. **No screens or database migrations have been created.** An early Go scaffold (`cmd/`, `internal/`) exists; it is treated as a Phase 0 scaffold, not feature work (Gate G0). Detailed documents are in [`docs/`](docs/README.md).
 > Markers used throughout: **[NEEDS LAWYER CONFIRMATION]** · **[MAKE CONFIGURABLE]** · **[ASSUMPTION]** · **[DECISION REQUIRED]**.
 
 ---
@@ -109,7 +109,7 @@ AI features · client portal · OCR (benchmark Sinhala first) · offline documen
 | Backup failure | Point-in-time recovery, immutable offsite copy, quarterly restore drills |
 | Scope creep | MVP thesis, explicit exclusions, decision gates |
 
-Full register (27 risks): [19-product-risk-register](docs/19-product-risk-register.md).
+Full register (30 risks): [19-product-risk-register](docs/19-product-risk-register.md).
 
 ## 9. Decisions needed from the lawyer
 

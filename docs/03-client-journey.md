@@ -161,7 +161,7 @@ See doc 04 §2 for the full client data model and the purpose of each field.
 |---|---|
 | Who | Appearing lawyer (maybe junior, maybe external counsel) |
 | Required | Access to: case number, court/courtroom, parties, last order, today's purpose, key documents, notes |
-| Created | Attendance marked ("appeared", "case not called", "court not sitting") |
+| Created | Listing status updated to `Held`, `Not reached` or `Court not sitting` (doc 06 §4). Appearing lawyer confirmed, plus any substitute who actually appeared |
 | Documents | Photos of journal/minute where permitted (**[NEEDS LAWYER CONFIRMATION]** rules on photographing court records) |
 | Approvals | None |
 | Notifications | None during court (silent mode) |
@@ -173,7 +173,7 @@ See doc 04 §2 for the full client data model and the purpose of each field.
 |---|---|
 | Who | Appearing lawyer (target: same day, on phone) |
 | Required | What happened (outcome type from list + free text), order/direction, **next date and purpose** (if given), who must do what by when, whether client must be informed |
-| Created | Hearing outcome; next hearing (date source = "Court order at hearing on DD/MM", verification = *Reported by lawyer* until clerk confirms from record, **[MAKE CONFIGURABLE]**); follow-up tasks; timeline events |
+| Created | Hearing outcome; listing status = `Outcome recorded`; next hearing (date source = "Court order at hearing on DD/MM", authority = Primary, verification state = `Unverified` until the clerk confirms it from the record. Whether the appearing lawyer's own entry may count as verified is **[MAKE CONFIGURABLE]**, see doc 06); follow-up tasks; timeline events |
 | Documents | Certified copy request task if order matters |
 | Approvals | Optional senior confirmation for juniors' entries |
 | Notifications | Lead lawyer (if different); clerk (verify next date); client-update task created |
@@ -193,7 +193,15 @@ See doc 04 §2 for the full client data model and the purpose of each field.
 
 ### Stage 15 — Next action
 
-Tasks created from the outcome: file document by date, obtain certified copy, contact witness, prepare written submissions, pay fees. Loops back to Stage 11 for the next hearing.
+| | |
+|---|---|
+| Who | Lead lawyer assigns; owners carry out the tasks (junior, clerk, assistant) |
+| Required | Directions from the outcome: what must be done, by whom and by when. Hard deadlines are flagged |
+| Created | Tasks from the outcome (file a document by a date, obtain a certified copy, contact a witness, prepare written submissions, pay fees), linked to the matter, proceeding and next hearing; preparation checklist for the next hearing generated from its purpose |
+| Documents | Drafts, filed copies with the registry stamp, certified copies as they arrive |
+| Approvals | Reviewer sign-off on tasks that have a reviewer (doc 04 §6) |
+| Notifications | Task assigned; due and overdue reminders; overdue hard deadline escalates to the responsible partner (doc 13) |
+| Next | Back to Stage 11 for the next hearing, or Stage 16, 17 or 18 when the proceeding ends |
 
 ### Stage 16 — Settlement
 

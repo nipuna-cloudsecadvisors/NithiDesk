@@ -32,6 +32,7 @@ Covers PART 9 (hearing management), PART 10 (lawyer daily work), PART 11 (weekly
 | Appearing lawyer(s) | Who will appear (may differ from lead lawyer); external counsel possible |
 | Instructing attorney present | If counsel appears, who instructs (**[NEEDS LAWYER CONFIRMATION]**) |
 | Assigned clerk | Responsible for verification and registry work |
+| Judge (optional) | Who is presiding, if the firm records it (**[MAKE CONFIGURABLE]**, doc 05 §2.2) |
 | Previous hearing | Link (automatic when created from an outcome) |
 | Previous outcome summary | Derived from previous hearing |
 | Preparation status | `Not started` · `In progress` · `Ready` · `Blocked` (reason) |
@@ -64,6 +65,7 @@ Every date assertion records:
 Rules:
 - Assertions are **append-only**. Changing a date never deletes the previous assertion.
 - If a new assertion disagrees with the current *verified* date, the hearing enters **Conflict** (see §4) — it does not silently overwrite.
+- **Correction vs re-dating.** A new assertion on the *same* hearing means "we disagree about what the court fixed for this listing" (a mis-recorded date, a journal that differs from the lawyer's note). When the court or registry actually **moves** the listing before the day (motion to advance or postpone, notice that the court will not sit), the hearing becomes `Vacated` and a **replacement hearing** is created with its own assertions (§4.2). The UI asks which one it is: "The date was recorded wrongly" or "The court changed the date".
 
 ---
 
@@ -108,6 +110,7 @@ stateDiagram-v2
 ```
 
 - `Held`, `Not reached`, `Court not sitting` are all *past* states that still require the next date — the "outcome pending" queue catches any hearing in the past without a recorded outcome.
+- `Outcome recorded` requires **either** a next hearing **or** an explicit reason there is none: proceeding concluded (judgment, dismissal, settlement, withdrawal), laid by / sine die (proceeding becomes Dormant, §8), or "date to be obtained from registry" (which creates an urgent clerk task). A hearing can never close silently with no next step.
 - `Vacated` always links to its replacement hearing (or reason if none).
 - `Cancelled` requires a reason.
 - "Completed" from the brief = `Outcome recorded`.
@@ -146,6 +149,8 @@ stateDiagram-v2
    - **On list & our hearing exists** → confirmation (may verify).
    - **Our hearing exists but not on list** → ⚠ alert ("not listed — check registry").
    - **On list but no hearing in NithiDesk** → ⚠ alert ("unexpected listing — possible missed date").
+   - **On list for a date different from our recorded date** → adds an *Official court list* assertion, so the hearing goes into `Conflict`.
+   - Proceedings with **no case number yet** cannot be matched; they are shown separately so the clerk can check them by party name.
 4. Results stored as an import batch for audit.
 
 This single routine is likely to be the most valuable risk control in the product. **[NEEDS LAWYER CONFIRMATION]** how court lists are published and obtained per court.
@@ -202,7 +207,7 @@ Example items: Court date verified (auto-ticked from verification state) · Clie
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
-(Illustrative case numbers.) Mobile version: doc 12.
+(Illustrative case numbers.) Mobile version, including the court-day case card, quick outcome form, read-back confirmation and "request client contact": doc 12 §3. This document defines the *data* those screens use; doc 12 defines the mobile *interaction*.
 
 ### 6.3 Daily brief
 
@@ -267,3 +272,5 @@ Day / week / month calendars filterable by lawyer, court, case type, status, ver
 | Date given as "to be fixed" / "sine die" | Proceeding marked Dormant; no hearing; reminder task to check the record periodically |
 | Date-only vs time: DST/timezone | Not applicable in Sri Lanka, but local-date storage avoids server-timezone bugs |
 | Clerk verifies, then lawyer edits | Conflict state; both notified |
+| Newly filed case, no case number yet | Hearing allowed (keyed to proceeding, not number); shown with "No case no." badge; excluded from court-list matching (§4.4) |
+| Appearing lawyer changes on the day (junior covers) | Outcome form's "Who appeared" records the actual person; appearance-scoped access granted (doc 09 §2.2) |

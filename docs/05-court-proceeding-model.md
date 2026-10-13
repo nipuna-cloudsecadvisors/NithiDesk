@@ -21,27 +21,51 @@ Covers PART 6 (court structure), PART 7 (proceedings), PART 8 (party roles per p
 
 ```mermaid
 flowchart TB
-    SC[Supreme Court]
-    CA[Court of Appeal]
-    HC[High Court of the Province<br/>criminal · writs · appellate from MC]
-    HCCA[High Court of the Province<br/>exercising civil appellate jurisdiction<br/>'Civil Appellate High Court']
-    COMHC[Commercial High Court]
-    HCB[High Court at Bar / Special High Courts]
-    DC[District Court]
-    MC[Magistrate's Court<br/>incl. Primary Court jurisdiction]
-    OT[Tribunals & other fora<br/>Labour Tribunal · Quazi · Mediation Board ·<br/>Arbitration · Commissions]
+    SC[Supreme Court<br/>incl. fundamental rights original jurisdiction]
+    CA[Court of Appeal<br/>appeals from HC trials · writs · revision · restitutio]
+    HC[High Court<br/>trials on indictment · High Court at Bar]
+    PHC[Provincial High Court<br/>appellate / revisionary from MC & Primary Court ·<br/>writs · Labour Tribunal appeals]
+    HCCA[Provincial High Court exercising<br/>civil appellate jurisdiction<br/>'Civil Appellate High Court']
+    COMHC[Commercial High Court<br/>Western Province]
+    DC[District Court<br/>incl. family / testamentary]
+    MC[Magistrate's Court]
+    PC[Primary Court<br/>usually presided over by the Magistrate]
+    LT[Labour Tribunal]
+    OT[Other fora<br/>Quazi · Mediation Board ·<br/>Arbitration · Commissions]
 
     SC --- CA
-    CA --- HC
     SC --- HCCA
     SC --- COMHC
-    HCCA --- DC
-    HC --- MC
+    SC --- PHC
+    CA --- HC
     CA --- DC
     CA --- MC
+    HCCA --- DC
+    PHC --- MC
+    PHC --- PC
+    PHC --- LT
 ```
 
 Lines indicate common appeal/revision paths only loosely — the real paths depend on the proceeding type and are expressed through **allowed relationship rules** in templates (**[NEEDS LAWYER CONFIRMATION]**). Tribunals, mediation boards and arbitration are included because a "matter" may pass through them before or instead of court (**[NEEDS LAWYER CONFIRMATION]** whether the pilot firm handles these).
+
+**[ASSUMPTION]** In practice the High Court (Judicature Act) and the Provincial High Court (Constitution Art. 154P; High Court of the Provinces (Special Provisions) Act No. 19 of 1990, as amended) often sit in the same courthouse with the same judges, but their jurisdictions, case-number series and appeal routes differ. Model them as **separate court levels** that can share a court location, so reports and relationship rules stay correct. **[NEEDS LAWYER CONFIRMATION]**
+
+### 2.1a Jurisdiction and appeal routes (illustrative, for template design)
+
+| Court level | Typical first-instance work | Typical route onward (and whether leave is needed) |
+|---|---|---|
+| Magistrate's Court | Criminal summary trials, B reports, bail/remand, maintenance | Appeal/revision → Provincial High Court; revision also → Court of Appeal |
+| Primary Court | Land possession disputes (Primary Courts' Procedure Act s.66) | Revision → Provincial High Court |
+| District Court | Civil, land, partition, money, family/divorce, testamentary | Final appeal → HCCA; **leave to appeal** against interlocutory orders → HCCA; revision/restitutio → Court of Appeal |
+| HCCA | Civil appeals from DC in the province | **Leave to appeal** → Supreme Court |
+| Commercial High Court | Commercial disputes above a value threshold, IP, company matters | Appeal → Supreme Court |
+| High Court (criminal) | Trials on indictment, High Court at Bar | Appeal → Court of Appeal → **special leave** → Supreme Court |
+| Provincial High Court (appellate/writ) | Appeals from MC/Primary Court, writs on provincial matters, Labour Tribunal appeals | Appeal → Supreme Court (**leave** usually required) |
+| Labour Tribunal | Termination and other workman applications | Appeal on a question of law → Provincial High Court |
+| Court of Appeal | Writs, revision, restitutio, appeals from HC criminal trials, election petitions | **Leave / special leave to appeal** → Supreme Court |
+| Supreme Court | Fundamental rights, constitutional matters, final appeals, leave/special leave applications | — |
+
+**[NEEDS LAWYER CONFIRMATION]** every row: leave requirements, time limits, value thresholds and current routes after recent amendments. Leave applications are modelled as **their own proceeding** (`leave_to_appeal_from`), with the appeal itself as a separate linked proceeding once leave is granted (§5).
 
 ### 2.2 Court entities
 
@@ -73,7 +97,8 @@ A **proceeding type** is a template that controls behaviour without separate app
 
 | Template element | Example (illustrative) |
 |---|---|
-| Name (SI/EN) | "Land action (District Court)", "Partition action", "Money recovery", "Divorce", "Testamentary", "B report (MC)", "Summary trial (MC)", "Indictment (HC)", "Civil appeal (HCCA)", "Leave to appeal (SC)", "Writ application (CA)", "Revision application", "Fundamental rights (SC)", "Labour Tribunal application", "Primary Court s.66 dispute" |
+| Name (SI/EN) | "Land action (District Court)", "Partition action", "Money recovery", "Divorce", "Testamentary", "B report (MC)", "Summary trial (MC)", "Indictment (HC)", "Civil appeal (HCCA)", "Leave to appeal (HCCA, interlocutory)", "Leave to appeal (SC)", "Special leave to appeal (SC)", "Writ application (CA)", "Writ application (Provincial HC)", "Revision application", "Habeas corpus", "Fundamental rights (SC)", "Commercial action (Commercial HC)", "Labour Tribunal application", "Labour Tribunal appeal (PHC)", "Primary Court s.66 dispute" |
+| Case category | Fixed reporting category: Civil · Criminal · Family · Commercial · Land · Writ / public law · Fundamental rights · Labour · Appellate · Other — so "cases by category" reports work across all types |
 | Allowed court levels | Writ → Court of Appeal / Provincial HC |
 | **Case-number pattern(s)** | Regex + display mask + examples per court/type (e.g. a land case prefix, a "B/1234/26" style MC number). Used to **warn**, never to block — real numbers vary |
 | Party role catalogue | Plaintiff/Defendant vs Petitioner/Respondent vs Complainant/Accused |
@@ -163,6 +188,7 @@ A proceeding may relate to any other proceeding in the same matter (and, by expl
 | `remitted_retrial` | Proceeding (resumed or new) → appellate order sending it back | **[NEEDS LAWYER CONFIRMATION]** whether retrial reuses the old number |
 | `execution_of` | Execution proceeding → decree | |
 | `consolidated_with` | Symmetric | Two actions heard together |
+| `committed_from` | Indictment proceeding → MC proceeding it arose from | B report / non-summary inquiry leading to an HC indictment (**[NEEDS LAWYER CONFIRMATION]**) |
 | `connected_with` | Symmetric, generic | Criminal case connected to a civil case on the same facts |
 | `stay_pending` | Proceeding → proceeding whose outcome it awaits | Execution stayed pending appeal |
 
@@ -170,6 +196,7 @@ Rules:
 - Relationship types are **[MAKE CONFIGURABLE]**, with allowed from/to proceeding-type pairs.
 - An appeal **never modifies** the original proceeding; the original's status may change (e.g. "Decided — under appeal") through an event.
 - Relationship graph is shown as a tree/graph on the matter page ("Proceedings map").
+- The **original proceeding** is not a stored flag. It is derived as the proceeding at the root of the graph (no outgoing `appeal_of` / `revision_of` / `transferred_from` / `committed_from` link). A matter may have more than one root, e.g. a civil action and a connected criminal case.
 
 ```mermaid
 flowchart LR
@@ -190,7 +217,7 @@ flowchart LR
 | Case transferred to another court (same proceeding continues) | **[NEEDS LAWYER CONFIRMATION]** Option A: same proceeding, new court + new case number appended to history. Option B: new proceeding linked `transferred_from`. **Recommendation:** Option A when it is the same action continuing; Option B when it becomes a different action type |
 | Original court's judgment appealed | New proceeding (`appeal_of`); original concluded or "under appeal" |
 | Appellate court remits for retrial | Original proceeding resumes (stage reset event) or new linked proceeding — configurable |
-| B report becomes indictment in HC | New proceeding linked `connected_with` / `committed_from` (**[NEEDS LAWYER CONFIRMATION]**) |
+| B report becomes indictment in HC | New proceeding linked `committed_from` (**[NEEDS LAWYER CONFIRMATION]**) |
 
 Historical references preserved in all cases: old court, old number, old hearings, old documents all remain attached and searchable.
 

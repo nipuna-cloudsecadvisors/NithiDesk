@@ -1,7 +1,7 @@
 # NithiDesk — Planning Documentation Index
 
-> Status: **PLANNING DRAFT v0.1** — for review with a practising Sri Lankan Attorney-at-Law before any development begins.
-> No application code, screens or database migrations exist or should be created from these documents until review is complete.
+> Status: **PLANNING DRAFT v0.2** (gap audit 2026-10-13) — for review with a practising Sri Lankan Attorney-at-Law before any development begins.
+> Application code must not be built from these documents until review is complete. Note: an early Go scaffold (`cmd/`, `internal/`) now exists in the repository; under Gate G0 (doc 18 §4) it is treated as a scaffold/spike, not M1 feature work. No screens or database migrations exist.
 
 ## Marker conventions used in every document
 

@@ -43,6 +43,9 @@ Rule: **every field has a stated purpose.** Fields without a purpose are not col
 | Sensitivity flags | Access control | e.g. "public figure", "vulnerable person", "minor" |
 | Source / introduced by | Business development, conflict signal | Optional |
 | Notes (internal) | Context | Restricted to matter team |
+| Representatives | Who may instruct or receive information for this client (attorney under power of attorney, guardian, company officer) | Stored as relationships (§2.6) with authority evidence |
+| Previous matters | Context, conflict checking | **Derived** from matter-client links, never typed in. Shown only for matters the viewer may access; others appear as a count |
+| Conflict history | Audit of past conflict checks involving this entity | **Derived**; visible only to conflict approvers (§3.4) |
 
 ### 2.2 Individuals
 
@@ -109,6 +112,7 @@ On creation: exact match on NIC/passport/registration number → hard warning; f
 | Related entities | Directors, shareholders, group companies, spouses, family members, guarantors |
 | Witnesses & experts | Lower weight, but shown (**[MAKE CONFIGURABLE]**) |
 | Declined enquiries & prospects | People who consulted but were not engaged (they may have shared confidential info) |
+| Existing proceedings | Court + case number (current and previous numbers): the prospect's case may already be on the firm's books, possibly for the other side |
 | Matter subjects | Optional: property address / land name / vehicle number (land disputes often recur) |
 | Opposing counsel / attorneys | Not a conflict per se, but informative |
 
@@ -191,7 +195,7 @@ Conflict searches expose cross-matter information ("we act for X in a matter aga
 
 ### 4.3 Matter statuses — challenged and recommended
 
-The brief proposed: Prospective, Open, Active, Waiting, Court Pending, Appeal, Settlement, Closed, Archived.
+A typical status list for this kind of product (and the one in the earlier build brief) is: Prospective, Open, Active, Waiting, Court Pending, Appeal, Settlement, Closed, Archived.
 
 **Problem:** this list mixes three different things:
 1. *Lifecycle* (is the engagement open?): Prospective, Open, Closed, Archived.
@@ -204,7 +208,7 @@ Single-select status forcing a choice among these will be wrong half the time an
 
 | Dimension | Values | Set by |
 |---|---|---|
-| **Lifecycle status** (single, controlled transitions) | `Open` → `On hold` ↔ `Open` → `Closure requested` → `Closed` → `Archived` → (`Disposed`) | Users via workflow; Closure needs approval |
+| **Lifecycle status** (single, controlled transitions) | `Open` ⇄ `On hold`; `Open` → `Closure requested` → `Closed` → `Archived` → (`Disposed`); `Closure requested` → `Open` if rejected; `Closed` → `Open` on reopen (diagrams/matter-lifecycle §2) | Users via workflow; closure and reopen need partner approval |
 | **Phase** (label, configurable) | Pre-litigation · Litigation · Appeal · Settlement / negotiation · Enforcement / execution · Advisory · Post-judgment | User-chosen, with suggestion derived from proceedings |
 | **Attention flags** (derived, automatic) | Has hearing in next 7 days · Unverified upcoming date · Overdue tasks · Missing required documents · No activity in N days · Awaiting client instructions | System |
 
@@ -256,7 +260,9 @@ Entity (person/organisation)  ──plays──►  PartyRole in a Proceeding
 | Criminal (MC/HC) | Complainant, Accused, Suspect (B report stage), Victim, Aggrieved party, Prosecutor (police / AG) |
 | Appeals (HCCA/CA/SC) | Appellant, Respondent, Plaintiff-Appellant, Defendant-Respondent, Petitioner, Respondent-Respondent… (compound roles carry history) |
 | Writ / FR | Petitioner, Respondents (often officials + AG) |
-| Labour / tribunals | Applicant, Respondent, Employer, Workman |
+| Labour / tribunals | Applicant, Respondent, Employer, Workman; on appeal to the Provincial High Court, Applicant-Appellant / Respondent-Respondent etc. |
+| Primary Court (e.g. land-dispute proceedings) | Informant, First Party, Second Party, Intervenient (**[NEEDS LAWYER CONFIRMATION]**) |
+| Commercial High Court | As civil original (Plaintiff, Defendant) (**[NEEDS LAWYER CONFIRMATION]**) |
 | Any | Witness, Expert, Interpreter, Curator, Receiver, Commissioner |
 
 Compound appellate roles (e.g. "Defendant-Appellant-Petitioner") are generated from history + current role rather than typed freehand (**[NEEDS LAWYER CONFIRMATION]** convention).

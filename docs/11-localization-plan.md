@@ -28,6 +28,8 @@ A user may use the Sinhala UI while writing notes in English about a client whos
 | Message format | ICU MessageFormat (plurals, gender-neutral, variables) — no string concatenation |
 | Catalogues | Namespaced files per module (`locales/si/hearings.json` etc.); keys are semantic (`hearing.verification.unverified`) |
 | No hardcoded text | Lint rule in CI fails on literal UI strings; pseudo-localisation build to catch untranslated/overflowing text |
+| Server messages | The Go API returns **stable error and status codes with parameters** (e.g. `hearing.date_in_past`), not sentences. The frontend, email and PDF renderers translate them. Validation messages, notification text and email bodies are never composed in English inside business logic |
+| Key parity | CI fails when a key exists in `en` but not in `si`. For `ta`, a missing key is reported but allowed, and falls back to English |
 | Translation workflow | English source → Sinhala translation by legal-literate translator → **lawyer review of legal terms** → glossary locked |
 | Reference data labels | Court names, case types, stages, roles, purposes stored **in the database with per-language labels** (they are configuration, not UI strings) |
 | Layout | Sinhala text is often 20–40% wider and taller (stacked vowel signs); components must wrap, not truncate mid-cluster; test at 320 px width |
@@ -116,6 +118,16 @@ Plan: migration tooling detects legacy-font text in DOC/DOCX and converts it to 
 - Templates per language; bilingual templates where courts/clients expect both.
 - Letters to clients use the client's preferred language; internal reports use the user's UI language.
 
+### 9.1 Reports and exports
+
+| Item | Rule |
+|---|---|
+| On-screen reports | Headings, column names and enum values come from the catalogue in the viewer's language. Data values such as names show in the viewer's preferred script with fallback |
+| PDF reports (daily brief, diary, matter summary) | Same HTML-to-PDF pipeline; language chosen when generating; option for **bilingual headings** |
+| CSV / Excel exports | UTF-8 with BOM (Excel opens Sinhala correctly). Column headers in the chosen language, plus an optional stable-code header row so re-imports do not depend on language |
+| Dates in reports | As in §6. Court dates are never shifted by timezone |
+| Report definitions | Text such as titles and descriptions lives in catalogues. The query logic does not depend on language |
+
 ## 10. Notifications, email, SMS
 
 | Channel | Language rule | Note |
@@ -125,7 +137,38 @@ Plan: migration tooling detects legacy-font text in DOC/DOCX and converts it to 
 | SMS | Client's preferred language | **Sinhala SMS uses UCS-2 encoding: ~70 characters per segment vs 160 for English → ~2–3× cost.** Templates must be written short; cost per message is a business decision |
 | WhatsApp (later) | Template messages must be pre-approved per language | |
 
-## 11. Testing
+## 11. Tamil readiness (what "architecture permits Tamil" means concretely)
+
+| Layer | Built in MVP so Tamil needs no rework |
+|---|---|
+| Locale code | `ta-LK` registered; catalogues scaffolded with English fallback |
+| Data | `name_ta` and `label_ta` fields exist on names, titles and reference data (empty for now) |
+| Search | The normalisation and transliteration-key pipeline accepts a script plug-in, so Tamil normalisation and Tamil↔Latin/Sinhala name keys are added there |
+| Fonts | Noto Sans Tamil and Noto Serif Tamil can be added to the same font stack and the PDF pipeline |
+| Collation | ICU `ta-LK` collation available in PostgreSQL |
+| Communication | Client preferred language accepts `ta`; template lookup falls back to English and flags it for staff |
+| Glossary | The glossary data model has a Tamil column |
+| UI | The language switcher is driven by the list of enabled locales, not hardcoded to two |
+
+**Not done in MVP:** Tamil translation, Tamil OCR benchmark, Tamil legal glossary review.
+
+## 12. Coverage check against PART 21
+
+| PART 21 item | Section |
+|---|---|
+| English UI · Sinhala UI | §2 |
+| Mixed Sinhala/English legal terminology | §2 dual-label mode, §3 glossary |
+| Unicode storage | §4 |
+| Sinhala search · English search | §5 |
+| Sinhala names · English names · transliterated names | §4, §5, §6 |
+| Sinhala OCR | §7 |
+| Sinhala PDF generation | §9 |
+| Notifications · emails | §10 |
+| Reports | §9.1 |
+| No hardcoded frontend text | §2 |
+| Tamil later | §11 |
+
+## 13. Testing
 
 - Browsers: desktop Chrome/Edge/Firefox, Android Chrome, iOS Safari (Sinhala rendering differences).
 - Long-word and narrow-screen tests; pseudo-localisation; screenshot regression in both languages.

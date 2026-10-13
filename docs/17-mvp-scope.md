@@ -45,14 +45,14 @@ Everything in MVP must serve daily use by lawyers and clerks. Anything that is o
 - **OCR** (Sinhala + English, self-hosted, benchmarked) and full-text content search.
 - Encrypted **offline court pack** with documents.
 - Court-list import (CSV/PDF) with matching; email-in to matter.
-- Web push; **SMS** notifications; iCal feed.
+- Web push; **SMS** notifications; iCal feed; direct sending of approved client updates by email (doc 04 §7).
 - Full **workflow templates** per proceeding type (stages, purpose catalogue, checklists, document checklists, deadline-rule suggestions).
 - Document requests to clients; secure expiring share links.
 - Appearance-scoped access automation; break-glass workflow; external counsel accounts (if confirmed needed).
 - **Lightweight fee tracking** (fee arrangement, appearance-fee log, fee notes/receipts) — **[DECISION REQUIRED]**.
-- Bilingual PDF exports (briefs, chronology, reports).
+- Bilingual PDF exports (briefs, chronology, reports). The bilingual printable daily diary/brief PDF is already MVP (M1, §6).
 - Expanded reports (matter aging, workload, document activity, hearings by month).
-- Retention/disposal workflow; data-subject request handling.
+- Retention/disposal workflow; data-subject request *tooling*. From go-live, PDPA requests are handled through a documented manual procedure (doc 10 §6.1) — **[NEEDS LAWYER CONFIRMATION]** on PDPA commencement dates.
 - Legacy Sinhala font conversion tooling at scale; archive import (class D).
 - Passkeys/WebAuthn; OIDC SSO.
 
@@ -72,6 +72,7 @@ Everything in MVP must serve daily use by lawyers and clerks. Anything that is o
 - Tamil UI and Tamil OCR (earlier if pilot needs it).
 - Native mobile apps (only if PWA limits bite — e.g. iOS storage/push).
 - Office/Google Docs live editing integration.
+- AI document comparison and Sinhala ↔ English translation assistance (doc 14).
 - Analytics/benchmarks across firms (opt-in, anonymised).
 
 ---
@@ -122,6 +123,9 @@ Everything in MVP must serve daily use by lawyers and clerks. Anything that is o
 | Open matters (by lawyer, court, practice area, phase) | Partners | MVP |
 | Overdue tasks (by owner, hard deadlines highlighted) | Partners, lawyers | MVP |
 | Cases by court / by case type | Managing partner | MVP (simple) |
+| Court-list check-off status (tomorrow's hearings: on list / not on list / not checked) | Clerks | MVP |
+| My matters with no future hearing (not Concluded/Dormant) | Lawyers, partners | MVP |
+| Daily printable diary (next two days, bilingual PDF) | Clerks, partners | MVP (continuity fallback, doc 19 §3) |
 | Workload per lawyer (hearings/week, open matters, open tasks) | Managing partner | Phase 2 |
 | Matter aging (time since open, since last activity, per stage) | Partners | Phase 2 |
 | Closed matters (period, outcome) | Managing partner | Phase 2 |
@@ -134,6 +138,12 @@ Everything in MVP must serve daily use by lawyers and clerks. Anything that is o
 | Verification performance (avg lead time, % verified by T-2) | Managing partner, clerks | Phase 2 |
 
 All reports permission-filtered; exports audited.
+
+**By audience (summary):**
+- **Managing partner** — firm-wide hearings, outcomes not recorded, open matters, workload, aging, conflict checks, restricted-access review, document activity.
+- **Partners** — the same, filtered to their portfolio; client activity; overdue tasks of their teams.
+- **Lawyers** — upcoming hearings, my overdue tasks, my matters with no future hearing.
+- **Clerks** — unverified dates, court-list check-off status, daily printable diary, verification performance.
 
 ---
 
@@ -150,7 +160,7 @@ All reports permission-filtered; exports audited.
 | Preparation checklists | Purpose × type | Templates, mandatory items | Simple templates |
 | Document categories | Firm | Two-level taxonomy, default confidentiality | List |
 | Matter numbering & naming | Firm | Pattern, title convention | Setting |
-| Matter categories / practice areas | Firm | Lists | Lists |
+| Matter categories / practice areas | Firm, practice area | Lists; per-practice-area defaults (checklists, document categories, retention class, whether proceedings are expected) | Lists (defaults Phase 2) |
 | Statuses | Firm | Phase labels; lifecycle fixed | Phase list |
 | Approvals | Firm | Who approves conflicts, engagement, client updates, closure; one- or two-level | Settings |
 | Verification policy | Firm, court, priority | Who may verify; window; whether lawyer-in-court counts as verified | Settings |
