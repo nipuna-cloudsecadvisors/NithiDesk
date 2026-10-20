@@ -21,10 +21,11 @@ Covers PART 27.
 | Workflow | Phase | Detail |
 |---|---|---|
 | Manual entry | MVP | All data entered by staff with provenance |
+| Lawyer / clerk verification | MVP | Every date — manual, imported or (later) connector-sourced — follows the verification model in doc 06; this is the control that makes imports safe |
 | CSV import (matters, proceedings, hearings) | MVP | Dry-run, validation, error report (doc 16) |
 | Court-list check-off | MVP | Clerk ticks tomorrow's cases against the list (doc 06 §4.4) |
 | Court-list import (CSV/PDF/photo) | Phase 2 | Parse case numbers via configurable patterns; match; human confirms |
-| Judgment/order PDF import | Phase 2 | Upload; extract metadata (pattern-based; AI-assisted Phase 3); human confirms |
+| Judgment/order PDF import (incl. certified copies of journal entries) | Phase 2 | Upload; extract metadata (pattern-based; AI-assisted Phase 3); human confirms |
 | Email-in | Phase 2 | Forward registry/counsel emails to a matter address |
 
 ---
@@ -82,6 +83,14 @@ All inbound changes land as **proposed changes** (e.g. "External source says nex
 
 ---
 
+### 3.4 Failure behaviour
+
+- A connector outage or schema change never blocks core work: the adapter is disabled, a P1 admin alert fires, and clerks continue with manual verification.
+- External data is never allowed to *downgrade* a human-verified date silently; disagreement creates a conflict state (doc 06).
+- Credentials for any official service are held per firm in a secrets store, never shared across firms, never stored in code or logs.
+
+---
+
 ## 4. Future capability roadmap (indicative)
 
 | Capability | Value | Dependency |
@@ -92,6 +101,8 @@ All inbound changes land as **proposed changes** (e.g. "External source says nex
 | E-filing | High but complex (digital signatures, formats, fees) | Official e-filing system & legal framework |
 | Filing status | Medium | E-filing |
 | Payment status | Low–medium | Payment gateway integration by courts |
+
+Phasing: file-based imports Phase 2 (doc 17 §2.2); first official connector Phase 3 only if an official source exists; e-filing, filing status and payment status Future.
 
 ---
 

@@ -1,0 +1,23 @@
+name: Decision / lawyer question
+description: A product, legal-practice or architecture decision to be made and recorded
+title: "[Decision] "
+labels: ["type:decision"]
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Question or decision
+    validations:
+      required: true
+  - type: dropdown
+    id: who
+    attributes:
+      label: Who decides
+      options: [Lawyer (practice), Owner (business), Architecture (ADR)]
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context and options
+      description: Link the planning docs and markers (NEEDS LAWYER CONFIRMATION / MAKE CONFIGURABLE / ASSUMPTION).

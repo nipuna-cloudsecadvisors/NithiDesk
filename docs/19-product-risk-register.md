@@ -33,6 +33,9 @@ Covers PART 35. Likelihood (L) and Impact (I): 1 (low) – 5 (high). Score = L �
 | R25 | **Wrong client-facing update** (wrong date/case sent to client) | 3 | 4 | 12 | Only verified dates in templates by default; approval workflow; preview with recipient + matter shown | Communication log; client correction process | Lead lawyer |
 | R26 | **Timezone/date-shift bug** moving court dates by a day | 2 | 5 | 10 | Local-date type for court events; tests around midnight; no UTC conversion for date-only values | Automated tests; reconciliation reports | Engineering |
 | R27 | **Ethical wall bypass** via search, notification, report or AI | 2 | 5 | 10 | Wall check in central policy used by all read paths; tests for each path | Denied-access alerts; periodic wall audit | Engineering / MP |
+| R28 | **Hearing on the wrong proceeding/matter** (outcome or next date recorded against a similar case) | 3 | 4 | 12 | Case card shows court + case number + parties before save; read-back names the case; recent-case pick lists instead of free search in court mode | Court-list mismatch; "unexpected next date" warning when a proceeding gets two future hearings | Lawyer / clerk |
+| R29 | **Silent notification failure** (email bounces, worker stopped) so escalations never fire | 2 | 5 | 10 | Monitored queue; delivery retries; in-app as source of truth | P1 admin alert on delivery failure/backlog; daily "escalations sent" heartbeat | Admin |
+| R30 | **Migration error** (wrong date/case carried from diary or Excel) | 4 | 5 | 20 | Imported dates Unverified; dry-run validation; case-number patterns; duplicate checks | 100% verification of near dates; parallel-run reconciliation; cut-over criteria (doc 16 §4.2) | Clerk / product owner |
 
 ## 2. Top 5 risks to manage first
 
@@ -41,6 +44,28 @@ Covers PART 35. Likelihood (L) and Impact (I): 1 (low) – 5 (high). Score = L �
 3. **R4/R27 — unauthorised access** → central authorisation from day one, tested on every path.
 4. **R5 — conflict errors** → strong matching + mandatory human decision + historical party data.
 5. **R19 — Sinhala text handling** → spikes in Phase 0.
+
+### 2.1 Coverage of the brief's named risks (PART 35)
+
+| Named risk | Register entry |
+|---|---|
+| Wrong hearing date | R1, R26, R30 |
+| Missed hearing | R2, R29 |
+| Wrong case number | R3, R28 |
+| Unauthorized document access | R4, R21, R27 |
+| Incorrect conflict result | R5 |
+| Missing document | R6 |
+| Duplicate client | R7, R8 |
+| Duplicate case | R9 |
+| Lost evidence | R10 |
+| AI hallucination | R11 |
+| Incorrect Sinhala OCR | R12 |
+| Mobile device loss | R13 |
+| Failed backup | R14 |
+
+### 2.2 Risk review
+
+The register is reviewed at every decision gate (doc 18 §4) and monthly during the pilot; scores are re-rated *after* controls once the pilot provides evidence. New incidents and near-misses (e.g. a date caught by the clerk queue) are logged against the relevant risk.
 
 ## 3. Business continuity fallback
 

@@ -4,6 +4,27 @@ Covers PART 30. **Conceptual only — not physical tables, not migrations.** Ent
 
 Diagram: [diagrams/information-relationships.md](diagrams/information-relationships.md).
 
+### Where each PART 30 entity lives in this model
+
+The brief names fourteen entities. Several are **roles of one registry record** rather than separate things. That is deliberate (decision D1 below).
+
+| Brief entity | Model concept | Why it is not a separate silo |
+|---|---|---|
+| Client | **Entity** + **Client profile** (firm relationship: status, onboarding, preferred language) + **Matter-client link** | The same person can be a client in one matter and an opposing party or witness in another. Conflict checking depends on seeing this |
+| Matter | **Matter** | The client's legal problem; it owns proceedings, documents, tasks and communications |
+| Proceeding | **Proceeding** + **Case-number record** (history) + **Proceeding relationship** | One matter can hold many proceedings. Case numbers are kept as a history |
+| Court | **Court** (reference data: level, location, divisions, courtrooms, calendar) | Configuration, not user data |
+| Party | **Party role** (Entity × Proceeding × role × side) | Roles change between courts, e.g. Defendant → Appellant |
+| Hearing | **Hearing** + **Date assertion** + **Verification** + **Outcome** | Date provenance is first-class (doc 06) |
+| Document | **Document** + **Document version** + **Document link** | Owned by the matter, linked to anything |
+| Evidence | **Evidence item** + **Custody event** + **Original (physical) record** | Evidence is a legal status, not a file type; it may exist only on paper |
+| Task | **Task** (+ dependency, reminder, checklist template) | |
+| Lawyer | **User** (firm lawyer: login, role, matter membership, appearances) **or** Entity acting in a **Representation** (opposing counsel, external counsel without a login) | A firm lawyer is both a user and a registry entity, so conflict checks also see the firm's own lawyers' past roles |
+| Communication | **Communication** (+ participants, attachments via Document link, client-update approval) | |
+| Notification | **Notification** (refers to a source record; delivery attempts; preferences) | Never holds content the recipient cannot open |
+| Audit event | **Audit event** (append-only; actor, target, matter, outcome) | Governance context |
+| Legal hold | **Legal hold** (scope: client, matter, proceeding or document; reason; issued by; released by) | Overrides retention and disposal |
+
 ---
 
 ## 1. Bounded contexts (module boundaries)
@@ -44,10 +65,11 @@ Diagram: [diagrams/information-relationships.md](diagrams/information-relationsh
 | Matter — Proceeding | 1 : 0..N | proceeding belongs to exactly one matter |
 | Proceeding — Court | N : 1 (current) | history via case-number records |
 | Proceeding — Case-number record | 1 : 0..N | history; current derived |
-| Proceeding — Proceeding | M:N (typed) | appeal_of, revision_of, transferred_from… |
+| Proceeding — Proceeding | M:N (typed) | appeal_of, revision_of, transferred_from, committed_from… (full list doc 05 §5) |
 | Proceeding — Party role — Entity | M:N | role, ordinal, side, status per proceeding |
 | Party role — Representation — Entity (lawyer) | M:N | attorney on record / counsel, dated |
 | Proceeding — Hearing | 1 : 0..N | |
+| Hearing — Court / Courtroom | N : 1 | normally the proceeding's current court; recorded per hearing because a sitting can move (vacation judge, different courtroom) |
 | Hearing — Hearing (previous/next) | 1 : 0..1 each way | chain; also "replaces" for vacated |
 | Hearing — Date assertion | 1 : 1..N | append-only |
 | Hearing — Verification | 1 : 0..N | append-only; current derived |
@@ -63,9 +85,13 @@ Diagram: [diagrams/information-relationships.md](diagrams/information-relationsh
 | Task — Task | M:N (depends on) | |
 | Communication — Matter | N : 1 (or entity-only for pre-matter) | |
 | Communication — Entity (participants) | M:N | |
+| Communication — Document | M:N via Document link | letters, emails and attachments |
+| User — Entity | 1 : 0..1 | a firm lawyer is also a registry entity (conflicts, representation history) |
 | Notification — User | N : 1 | refers to a source record |
+| Notification — source record (Hearing / Task / Conflict check / Document / Communication…) | N : 1 (by reference) | access is re-checked when opened |
 | Audit event — (any record) | N : 1 (by reference, no FK enforcement needed) | append-only |
-| Legal hold — (Client / Matter / Proceeding / Document) | M:N | |
+| Audit event — User / Matter | N : 0..1 | actor; matter context when any |
+| Legal hold — (Client / Matter / Proceeding / Document) | M:N | a hold on a client or matter covers everything beneath it |
 | Ethical wall — Matter, Users | M:N both sides | |
 
 ---
@@ -103,6 +129,8 @@ Diagram: [diagrams/information-relationships.md](diagrams/information-relationsh
 | Evidence/custody | Lawyer | Append | No |
 | Task | Anyone with matter access | Yes | Cancel |
 | Communication | Lawyer/staff | Edit within short window, then correction | No |
+| Legal hold | Partner / managing partner | Scope can widen; release is a separate, approved event | No (released, never deleted) |
+| Notification | System | Read/acknowledged state only | Expires per retention |
 | Audit event | System | **Never** | Only by retention policy for audit logs |
 
 ---
