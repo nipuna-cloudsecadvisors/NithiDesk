@@ -21,6 +21,11 @@ func spaHandler(dir string) http.Handler {
 	root := os.DirFS(dir)
 	files := http.FileServerFS(root)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet && r.Method != http.MethodHead {
+			w.Header().Set("Allow", "GET, HEAD")
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
 		h := w.Header()
 		h.Set("Content-Security-Policy", contentSecurityPolicy)
 		h.Set("X-Frame-Options", "DENY")

@@ -349,10 +349,10 @@ func pick(n hearings.Name, lang string) string {
 	}
 }
 
-func joinNames(ns []hearings.Name, lang string) string {
+func joinNames(ns []hearings.PartyName, lang string) string {
 	out := make([]string, 0, len(ns))
 	for _, n := range ns {
-		if s := pick(n, lang); s != "" {
+		if s := pick(hearings.Name{EN: n.EN, SI: n.SI}, lang); s != "" {
 			out = append(out, s)
 		}
 	}

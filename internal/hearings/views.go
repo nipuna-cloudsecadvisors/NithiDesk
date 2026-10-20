@@ -26,6 +26,15 @@ type Name struct {
 	SI *string `json:"si,omitempty"`
 }
 
+// PartyName is a party on a card: name, role and ordinal ("1st Defendant").
+type PartyName struct {
+	EN       *string `json:"en,omitempty"`
+	SI       *string `json:"si,omitempty"`
+	RoleCode string  `json:"role_code,omitempty"`
+	RoleName Name    `json:"role_name"`
+	Ordinal  *int    `json:"ordinal,omitempty"`
+}
+
 // Ref is a reference item or court as shown on a card.
 type Ref struct {
 	ID   uuid.UUID `json:"id"`
@@ -61,6 +70,7 @@ type Card struct {
 	PurposeNote         *string      `json:"purpose_note,omitempty"`
 	ListingStatus       string       `json:"listing_status"`
 	VerificationState   string       `json:"verification_state"`
+	CurrentAssertionID  uuid.UUID    `json:"current_assertion_id"`
 	VerificationOverdue bool         `json:"verification_overdue"`
 	PreparationStatus   string       `json:"preparation_status"`
 	MatterID            uuid.UUID    `json:"matter_id"`
@@ -70,8 +80,8 @@ type Card struct {
 	ProceedingID        uuid.UUID    `json:"proceeding_id"`
 	ProceedingTitle     Name         `json:"proceeding_title"`
 	CaseNumber          *string      `json:"case_number,omitempty"`
-	OurClients          []Name       `json:"our_clients"`
-	Opposing            []Name       `json:"opposing"`
+	OurClients          []PartyName  `json:"our_clients"`
+	Opposing            []PartyName  `json:"opposing"`
 	Appearing           []Person     `json:"appearing"`
 	Instructions        *string      `json:"instructions,omitempty"`
 	LastOutcome         *LastOutcome `json:"last_outcome,omitempty"`
@@ -84,15 +94,21 @@ const cardSQL = `
 	select h.id, to_char(h.hearing_date, 'YYYY-MM-DD'), h.session, to_char(h.time_of_day, 'HH24:MI'),
 	       c.id, c.code, c.name_en, c.name_si, cr.label,
 	       pu.id, pu.code, pu.name_en, pu.name_si, h.purpose_note,
-	       h.listing_status, h.verification_state, h.preparation_status,
+	       h.listing_status, h.verification_state,
+	       (select a.id from date_assertion a where a.hearing_id = h.id
+	          and not exists (select 1 from date_assertion b where b.supersedes_id = a.id)
+	        order by a.asserted_at desc, a.id desc limit 1),
+	       h.preparation_status,
 	       m.id, m.matter_number, m.title_en, m.title_si, vm.title_masked, vm.access,
 	       pr.id, pr.title_en, pr.title_si,
 	       (select cn.raw from case_number_record cn where cn.proceeding_id = pr.id and cn.valid_to is null),
-	       coalesce((select json_agg(json_build_object('en', e.name_en, 'si', e.name_si) order by prr.created_at)
-	                 from party_role prr join entity e on e.id = prr.entity_id
+	       coalesce((select json_agg(json_build_object('en', e.name_en, 'si', e.name_si, 'role_code', rt.code, 'ordinal', prr.ordinal,
+	                                   'role_name', json_build_object('en', rt.name_en, 'si', rt.name_si)) order by prr.created_at)
+	                 from party_role prr join entity e on e.id = prr.entity_id join reference_item rt on rt.id = prr.party_role_type_id
 	                 where prr.proceeding_id = pr.id and prr.side = 'our_client' and prr.status = 'active'), '[]'),
-	       coalesce((select json_agg(json_build_object('en', e.name_en, 'si', e.name_si) order by coalesce(prr.ordinal, 0), prr.created_at)
-	                 from party_role prr join entity e on e.id = prr.entity_id
+	       coalesce((select json_agg(json_build_object('en', e.name_en, 'si', e.name_si, 'role_code', rt.code, 'ordinal', prr.ordinal,
+	                                   'role_name', json_build_object('en', rt.name_en, 'si', rt.name_si)) order by coalesce(prr.ordinal, 0), prr.created_at)
+	                 from party_role prr join entity e on e.id = prr.entity_id join reference_item rt on rt.id = prr.party_role_type_id
 	                 where prr.proceeding_id = pr.id and prr.side = 'opposing' and prr.status = 'active'), '[]'),
 	       coalesce((select json_agg(json_build_object('user_id', u.id, 'name', coalesce(u.display_name_en, u.display_name_si))
 	                                 order by u.display_name_en)
@@ -125,7 +141,7 @@ func scanCards(rows pgx.Rows) ([]Card, error) {
 		if err := rows.Scan(&c.ID, &c.Date, &c.Session, &c.Time,
 			&c.Court.ID, &c.Court.Code, &c.Court.Name.EN, &c.Court.Name.SI, &c.Courtroom,
 			&purposeID, &purposeCode, &purposeEN, &purposeSI, &c.PurposeNote,
-			&c.ListingStatus, &c.VerificationState, &c.PreparationStatus,
+			&c.ListingStatus, &c.VerificationState, &c.CurrentAssertionID, &c.PreparationStatus,
 			&c.MatterID, &c.MatterNumber, &c.MatterTitle.EN, &c.MatterTitle.SI, &c.TitleMasked, &c.Access,
 			&c.ProceedingID, &c.ProceedingTitle.EN, &c.ProceedingTitle.SI, &c.CaseNumber,
 			&clients, &opposing, &appearing, &c.Instructions,
@@ -153,7 +169,7 @@ func scanCards(rows pgx.Rows) ([]Card, error) {
 		}
 		if c.TitleMasked {
 			c.MatterTitle, c.ProceedingTitle = Name{}, Name{}
-			c.OurClients, c.Opposing = []Name{}, []Name{}
+			c.OurClients, c.Opposing = []PartyName{}, []PartyName{}
 		}
 		out = append(out, c)
 	}

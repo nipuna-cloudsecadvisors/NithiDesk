@@ -158,6 +158,7 @@ func mountAPI(mux *http.ServeMux, s Services, opts Options) {
 
 	// Imports.
 	authed("GET /api/v1/imports/template.csv", a.importTemplate)
+	authed("GET /api/v1/imports", a.listImports)
 	authed("POST /api/v1/imports", a.uploadImport)
 	authed("GET /api/v1/imports/{id}", a.getImport)
 	authed("GET /api/v1/imports/{id}/rows", a.importRows)
@@ -1091,8 +1092,8 @@ func (a *api) vacate(w http.ResponseWriter, r *http.Request) {
 		a.fail(w, r, err)
 		return
 	}
-	d, err := a.s.Hearings.Vacate(r.Context(), PrincipalFrom(r.Context()), id, in)
-	a.hearingResult(w, r, http.StatusOK, d, nil, err)
+	d, warnings, err := a.s.Hearings.Vacate(r.Context(), PrincipalFrom(r.Context()), id, in)
+	a.hearingResult(w, r, http.StatusOK, d, warnings, err)
 }
 
 func (a *api) verify(w http.ResponseWriter, r *http.Request) {
@@ -1156,8 +1157,8 @@ func (a *api) recordOutcome(w http.ResponseWriter, r *http.Request) {
 		a.fail(w, r, err)
 		return
 	}
-	d, err := a.s.Hearings.RecordOutcome(r.Context(), PrincipalFrom(r.Context()), id, in)
-	a.hearingResult(w, r, http.StatusOK, d, nil, err)
+	d, warnings, err := a.s.Hearings.RecordOutcome(r.Context(), PrincipalFrom(r.Context()), id, in)
+	a.hearingResult(w, r, http.StatusOK, d, warnings, err)
 }
 
 func (a *api) correctOutcome(w http.ResponseWriter, r *http.Request) {

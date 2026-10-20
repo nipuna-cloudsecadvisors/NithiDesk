@@ -8,6 +8,8 @@ import (
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -153,5 +155,25 @@ func TestClientSuppliedRequestIDIsIgnored(t *testing.T) {
 
 	if recorder.Header().Get(httpapi.RequestIDHeader) == "forged-id" {
 		t.Error("the router echoed a client-supplied request id")
+	}
+}
+
+// The web app and the API share one mux: registering both must not panic,
+// /api/ must stay JSON 404, and unknown app paths fall back to index.html.
+func TestServesWebAppAlongsideAPI(t *testing.T) {
+	dir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(dir, "index.html"), []byte("<!doctype html><title>NithiDesk</title>"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	router := httpapi.NewRouter(httpapi.Options{
+		Logger: slog.New(slog.NewJSONHandler(io.Discard, nil)), Version: "test",
+		API: &httpapi.Services{}, StaticDir: dir,
+	})
+	if rec := get(t, router, "/today"); rec.Code != http.StatusOK || !strings.Contains(rec.Body.String(), "NithiDesk") ||
+		!strings.Contains(rec.Header().Get("Content-Security-Policy"), "script-src 'self'") {
+		t.Fatalf("GET /today = %d, CSP %q", rec.Code, rec.Header().Get("Content-Security-Policy"))
+	}
+	if rec := get(t, router, "/api/v1/nope"); rec.Code != http.StatusNotFound || !strings.Contains(rec.Body.String(), "not_found") {
+		t.Fatalf("GET /api/v1/nope = %d %s", rec.Code, rec.Body.String())
 	}
 }

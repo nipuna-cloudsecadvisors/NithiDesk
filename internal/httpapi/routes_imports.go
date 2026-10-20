@@ -18,6 +18,15 @@ func (a *api) importTemplate(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write(imports.Template())
 }
 
+func (a *api) listImports(w http.ResponseWriter, r *http.Request) {
+	out, err := a.s.Imports.List(r.Context(), PrincipalFrom(r.Context()))
+	if err != nil {
+		a.fail(w, r, err)
+		return
+	}
+	a.ok(w, map[string]any{"items": out})
+}
+
 func (a *api) uploadImport(w http.ResponseWriter, r *http.Request) {
 	r.Body = http.MaxBytesReader(w, r.Body, imports.MaxFileBytes+64*1024)
 	if err := r.ParseMultipartForm(imports.MaxFileBytes + 64*1024); err != nil {

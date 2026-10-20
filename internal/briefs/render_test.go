@@ -29,6 +29,11 @@ var stress = []string{
 
 func s(v string) *string { return &v }
 
+func party(en, si string) hearings.PartyName {
+	n := name(en, si)
+	return hearings.PartyName{EN: n.EN, SI: n.SI}
+}
+
 func name(en, si string) hearings.Name {
 	n := hearings.Name{}
 	if en != "" {
@@ -67,8 +72,8 @@ func syntheticBrief() *Brief {
 				CaseNumber:        s(fmt.Sprintf("DR/%d/2026", 1000+n)),
 				VerificationState: states[n%3], PreparationStatus: preps[n%4], ListingStatus: hearings.StatusScheduled,
 				Purpose:    &hearings.Ref{Code: "trial", Name: name("Trial", "විභාගය")},
-				OurClients: []hearings.Name{name("Perera Holdings (Pvt) Ltd", "පෙරේරා හෝල්ඩිංග්ස් (පුද්) සමාගම")},
-				Opposing:   []hearings.Name{name("", stress[n%len(stress)]), name("K. Silva", "")},
+				OurClients: []hearings.PartyName{party("Perera Holdings (Pvt) Ltd", "පෙරේරා හෝල්ඩිංග්ස් (පුද්) සමාගම")},
+				Opposing:   []hearings.PartyName{party("", stress[n%len(stress)]), party("K. Silva", "")},
 				Appearing:  []hearings.Person{{UserID: uuid.New(), Name: "A. Fernando"}, {UserID: uuid.New(), Name: "නිමල් ජයසූරිය"}},
 				Instructions: s("Mixed line: client says " + stress[n%len(stress)] + " — bring the deed (ඔප්පුව) and " +
 					"<script>alert(1)</script> copies."),
@@ -85,7 +90,7 @@ func syntheticBrief() *Brief {
 			switch n % 9 {
 			case 4: // masked (restricted) matter, as hearings.scanCards leaves it
 				card.TitleMasked = true
-				card.OurClients, card.Opposing = []hearings.Name{}, []hearings.Name{}
+				card.OurClients, card.Opposing = []hearings.PartyName{}, []hearings.PartyName{}
 				card.Instructions, card.LastOutcome.Summary, card.LastOutcome.OrderText = nil, nil, nil
 				card.Access = "diary"
 			case 7: // diary access: no instructions or order text

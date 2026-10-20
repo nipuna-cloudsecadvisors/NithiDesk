@@ -339,7 +339,8 @@ func dateWarnings(ctx context.Context, tx pgx.Tx, hearingID uuid.UUID) ([]Warnin
 	}
 	rows.Close()
 	clashRows, err := tx.Query(ctx, `
-		select distinct ha.user_id from hearing_appearance ha
+		select distinct ha.user_id, coalesce(u.display_name_en, u.display_name_si, '') from hearing_appearance ha
+		join app_user u on u.id = ha.user_id
 		join hearing h2 on h2.id <> $1 and h2.listing_status = 'scheduled' and h2.hearing_date = $2
 		     and h2.court_id <> $3 and (h2.session = $4 or $4 = 'unspecified' or h2.session = 'unspecified')
 		join hearing_appearance hb on hb.hearing_id = h2.id and hb.user_id = ha.user_id
@@ -350,10 +351,11 @@ func dateWarnings(ctx context.Context, tx pgx.Tx, hearingID uuid.UUID) ([]Warnin
 	defer clashRows.Close()
 	for clashRows.Next() {
 		var userID uuid.UUID
-		if err := clashRows.Scan(&userID); err != nil {
+		var name string
+		if err := clashRows.Scan(&userID, &name); err != nil {
 			return nil, err
 		}
-		out = append(out, Warning{Code: "hearing.appearance_clash", Params: map[string]any{"user_id": userID}})
+		out = append(out, Warning{Code: "hearing.appearance_clash", Params: map[string]any{"user_id": userID, "name": name}})
 	}
 	return out, clashRows.Err()
 }
@@ -458,11 +460,12 @@ type VacateInput struct {
 
 // Vacate marks a hearing vacated and, when a replacement date is given,
 // lists the replacement linked by replaces_hearing_id (I-HE-5).
-func (s *Service) Vacate(ctx context.Context, p *authz.Principal, hearingID uuid.UUID, in VacateInput) (*Detail, error) {
+func (s *Service) Vacate(ctx context.Context, p *authz.Principal, hearingID uuid.UUID, in VacateInput) (*Detail, []Warning, error) {
 	if strings.TrimSpace(in.Reason) == "" {
-		return nil, apperr.Invalid(apperr.Field("reason", "required"))
+		return nil, nil, apperr.Invalid(apperr.Field("reason", "required"))
 	}
 	resultID := hearingID
+	var warnings []Warning
 	err := db.InTx(ctx, s.pool, p.Scope(), func(tx pgx.Tx) error {
 		matterID, status, _, err := hearingMatter(ctx, tx, hearingID, authz.AccessFull, true)
 		if err != nil {
@@ -479,20 +482,24 @@ func (s *Service) Vacate(ctx context.Context, p *authz.Principal, hearingID uuid
 			return fmt.Errorf("vacate: %w", err)
 		}
 		if in.Replacement != nil {
-			newID, err := cloneHearing(ctx, tx, p, hearingID, *in.Replacement, KindReplacement, true)
+			newID, err := cloneHearing(ctx, tx, p, hearingID, *in.Replacement, KindReplacement, true, nil)
 			if err != nil {
 				return err
 			}
 			resultID = newID
+			if warnings, err = dateWarnings(ctx, tx, newID); err != nil {
+				return err
+			}
 		}
 		return audit.Append(ctx, tx, audit.Event{FirmID: p.FirmID, Actor: actorOf(p), Action: "hearing.vacated",
 			TargetKind: "hearing", TargetID: hearingID, MatterID: matterID, Reason: in.Reason,
 			Changes: map[string]any{"replacement_hearing_id": nullUUID(boolID(in.Replacement != nil, resultID))}})
 	})
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return s.Get(ctx, p, resultID)
+	d, err := s.Get(ctx, p, resultID)
+	return d, warnings, err
 }
 
 func boolID(ok bool, id uuid.UUID) uuid.UUID {
@@ -505,7 +512,7 @@ func boolID(ok bool, id uuid.UUID) uuid.UUID {
 // cloneHearing lists a new hearing for the same proceeding, carrying the
 // court, purpose, clerk and appearances. replaces=true links a replacement;
 // otherwise the new hearing is the next one in the chain.
-func cloneHearing(ctx context.Context, tx pgx.Tx, p *authz.Principal, fromID uuid.UUID, c DateClaim, kind string, replaces bool) (uuid.UUID, error) {
+func cloneHearing(ctx context.Context, tx pgx.Tx, p *authz.Principal, fromID uuid.UUID, c DateClaim, kind string, replaces bool, newID *uuid.UUID) (uuid.UUID, error) {
 	claim, err := parseClaim(ctx, tx, c, "replacement.")
 	if err != nil {
 		return uuid.Nil, err
@@ -517,10 +524,14 @@ func cloneHearing(ctx context.Context, tx pgx.Tx, p *authz.Principal, fromID uui
 	}
 	var id uuid.UUID
 	err = tx.QueryRow(ctx, `
-		insert into hearing (firm_id, proceeding_id, matter_id, court_id, courtroom_id, hearing_date, session, time_of_day,
+		insert into hearing (id, firm_id, proceeding_id, matter_id, court_id, courtroom_id, hearing_date, session, time_of_day,
 		                     purpose_id, assigned_clerk_id, `+link+`, created_by, created_via)
-		select firm_id, proceeding_id, matter_id, court_id, courtroom_id, $2, $3, $4, purpose_id, assigned_clerk_id, id, $5, $6
-		from hearing where id = $1 returning id`, fromID, claim.date, claim.session, claim.timeOfDay, p.UserID, via).Scan(&id)
+		select coalesce($7, uuidv7()), firm_id, proceeding_id, matter_id, court_id, courtroom_id, $2, $3, $4, purpose_id,
+		       assigned_clerk_id, id, $5, $6
+		from hearing where id = $1 returning id`, fromID, claim.date, claim.session, claim.timeOfDay, p.UserID, via, newID).Scan(&id)
+	if db.IsUniqueViolation(err, "hearing_pkey") {
+		return uuid.Nil, apperr.New(apperr.KindConflict, "hearing.id_taken")
+	}
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("list follow-on hearing: %w", err)
 	}
@@ -715,14 +726,15 @@ type OutcomeInput struct {
 // authority, so unverified until the clerk checks the record), the chain link
 // and the status change — all or nothing. A concluding outcome with no next
 // date concludes the proceeding.
-func (s *Service) RecordOutcome(ctx context.Context, p *authz.Principal, hearingID uuid.UUID, in OutcomeInput) (*Detail, error) {
+func (s *Service) RecordOutcome(ctx context.Context, p *authz.Principal, hearingID uuid.UUID, in OutcomeInput) (*Detail, []Warning, error) {
 	if (in.Next == nil) == (strings.TrimSpace(in.NoNextReason) == "") {
-		return nil, ErrOutcomeNeedsNextOrReason
+		return nil, nil, ErrOutcomeNeedsNextOrReason
 	}
+	var warnings []Warning
 	switch in.NoNextReason {
 	case "", "concluded", "laid_by", "date_from_registry", "other":
 	default:
-		return nil, apperr.Invalid(apperr.Field("no_next_reason", "invalid"))
+		return nil, nil, apperr.Invalid(apperr.Field("no_next_reason", "invalid"))
 	}
 	inform := true
 	if in.InformClient != nil {
@@ -773,7 +785,7 @@ func (s *Service) RecordOutcome(ctx context.Context, p *authz.Principal, hearing
 				detail = "Court order at hearing on " + clock.FormatDate(date)
 			}
 			id, err := cloneHearing(ctx, tx, p, hearingID, DateClaim{Date: in.Next.Date, Session: in.Next.Session,
-				Time: in.Next.Time, SourceTypeID: srcID, SourceDetail: detail}, KindFromOutcome, false)
+				Time: in.Next.Time, SourceTypeID: srcID, SourceDetail: detail}, KindFromOutcome, false, in.Next.ID)
 			if err != nil {
 				return err
 			}
@@ -784,6 +796,9 @@ func (s *Service) RecordOutcome(ctx context.Context, p *authz.Principal, hearing
 			if _, err := tx.Exec(ctx, `update hearing set purpose_id = coalesce($2, purpose_id), purpose_note = $3
 				where id = $1`, id, in.Next.PurposeID, nullable(in.Next.PurposeNote)); err != nil {
 				return fmt.Errorf("next purpose: %w", err)
+			}
+			if warnings, err = dateWarnings(ctx, tx, id); err != nil {
+				return err
 			}
 			nextID = &id
 		}
@@ -821,9 +836,10 @@ func (s *Service) RecordOutcome(ctx context.Context, p *authz.Principal, hearing
 			Changes: map[string]any{"hearing_id": hearingID, "next_hearing_id": nextID, "no_next_reason": in.NoNextReason}})
 	})
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return s.Get(ctx, p, hearingID)
+	d, err := s.Get(ctx, p, hearingID)
+	return d, warnings, err
 }
 
 // CorrectOutcome appends a correction to a recorded outcome's text and type.

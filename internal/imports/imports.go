@@ -183,6 +183,33 @@ func (s *Service) Get(ctx context.Context, p *authz.Principal, id uuid.UUID) (*B
 	return &b, nil
 }
 
+// List returns the firm's recent batches, newest first.
+func (s *Service) List(ctx context.Context, p *authz.Principal) ([]Batch, error) {
+	if err := p.Require(authz.ImportRun); err != nil {
+		return nil, err
+	}
+	out := []Batch{}
+	err := db.ReadTx(ctx, s.pool, p.Scope(), func(tx pgx.Tx) error {
+		rows, err := tx.Query(ctx, `select id, kind, file_name, status, row_count, ok_count, warning_count, error_count,
+			created_at, validated_at, committed_at, rolled_back_at, row_version
+			from import_batch order by created_at desc limit 50`)
+		if err != nil {
+			return fmt.Errorf("list imports: %w", err)
+		}
+		defer rows.Close()
+		for rows.Next() {
+			var b Batch
+			if err := rows.Scan(&b.ID, &b.Kind, &b.FileName, &b.Status, &b.RowCount, &b.OKCount, &b.WarningCount,
+				&b.ErrorCount, &b.CreatedAt, &b.ValidatedAt, &b.CommittedAt, &b.RolledBackAt, &b.Version); err != nil {
+				return fmt.Errorf("list imports: %w", err)
+			}
+			out = append(out, b)
+		}
+		return rows.Err()
+	})
+	return out, err
+}
+
 // Rows returns validated rows, optionally by status.
 func (s *Service) Rows(ctx context.Context, p *authz.Principal, id uuid.UUID, status string) ([]Row, error) {
 	if _, err := s.Get(ctx, p, id); err != nil {

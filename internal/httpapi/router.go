@@ -70,7 +70,7 @@ func NewRouter(opts Options) http.Handler {
 		mountAPI(mux, *opts.API, opts)
 	}
 	if opts.StaticDir != "" {
-		mux.Handle("GET /", spaHandler(opts.StaticDir))
+		mux.Handle("/", spaHandler(opts.StaticDir))
 	}
 
 	return RequestID(RequestLogger(opts.Logger, Recover(opts.Logger, SecurityHeaders(mux))))
