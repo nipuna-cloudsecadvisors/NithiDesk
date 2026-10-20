@@ -8,6 +8,7 @@
 package migrate
 
 import (
+	"bytes"
 	"context"
 	"crypto/sha256"
 	"errors"
@@ -58,7 +59,10 @@ func Load(fsys fs.FS) ([]Migration, error) {
 		if err != nil {
 			return nil, fmt.Errorf("read migration %s: %w", entry.Name(), err)
 		}
-		out = append(out, Migration{Version: version, Name: m[2], SQL: string(body), Checksum: sha256.Sum256(body)})
+		// Hash the text with CRLF folded to LF so a Windows checkout and a
+		// Linux checkout of the same file agree.
+		normalised := bytes.ReplaceAll(body, []byte{13, 10}, []byte{10}) // CRLF -> LF
+		out = append(out, Migration{Version: version, Name: m[2], SQL: string(normalised), Checksum: sha256.Sum256(normalised)})
 	}
 	sort.Slice(out, func(i, j int) bool { return out[i].Version < out[j].Version })
 	return out, nil
