@@ -28,7 +28,7 @@ jobs:
     runs-on: [self-hosted, nithidesk]
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Check planning docs (links, Mermaid fences, markers)
@@ -40,14 +40,14 @@ jobs:
     runs-on: [self-hosted, nithidesk]
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Detect Go module
         id: detect
         shell: bash
         run: echo "present=$([ -f go.mod ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         if: steps.detect.outputs.present == 'true'
         with:
           go-version-file: go.mod
@@ -82,7 +82,7 @@ jobs:
       run:
         working-directory: web
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Install
