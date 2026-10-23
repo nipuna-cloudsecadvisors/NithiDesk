@@ -51,6 +51,9 @@ jobs:
         if: steps.detect.outputs.present == 'true'
         with:
           go-version-file: go.mod
+          # The self-hosted runner keeps Go's module and build caches on disk;
+          # uploading them to the Actions cache only adds minutes.
+          cache: false
       - name: Vet
         if: steps.detect.outputs.present == 'true'
         shell: bash
