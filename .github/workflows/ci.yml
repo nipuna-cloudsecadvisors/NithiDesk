@@ -4,6 +4,10 @@ name: CI
 # The repository is public: fork pull requests must never run on this machine.
 # The `if:` guards below are defence in depth only; the real control is the repo
 # setting "Require approval for all external contributors" (Settings → Actions).
+#
+# Pull requests get a quick check only (docs, vet, build, i18n lint, web build).
+# The full test suite, including the integration and authorisation gate, runs
+# on pushes to main and on manual dispatch (Actions → CI → Run workflow).
 
 on:
   push:
@@ -24,7 +28,7 @@ jobs:
     runs-on: [self-hosted, nithidesk]
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Check planning docs (links, Mermaid fences, markers)
@@ -36,17 +40,20 @@ jobs:
     runs-on: [self-hosted, nithidesk]
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Detect Go module
         id: detect
         shell: bash
         run: echo "present=$([ -f go.mod ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         if: steps.detect.outputs.present == 'true'
         with:
           go-version-file: go.mod
+          # The self-hosted runner keeps Go's module and build caches on disk;
+          # uploading them to the Actions cache only adds minutes.
+          cache: false
       - name: Vet
         if: steps.detect.outputs.present == 'true'
         shell: bash
@@ -56,7 +63,41 @@ jobs:
         shell: bash
         run: go build ./...
       # -race needs cgo and a C toolchain, which the Windows runner lacks.
+      # internal/itest (the authorisation merge gate) runs when the runner
+      # provides NITHIDESK_TEST_DATABASE_URL (a role allowed to CREATE
+      # DATABASE); without it the suite reports itself skipped.
       - name: Test
-        if: steps.detect.outputs.present == 'true'
+        if: steps.detect.outputs.present == 'true' && github.event_name != 'pull_request'
         shell: bash
+        env:
+          NITHIDESK_TEST_DATABASE_URL: ${{ vars.NITHIDESK_TEST_DATABASE_URL }}
         run: go test -count=1 ./...
+      - name: Authorisation gate must not be skipped on main
+        if: steps.detect.outputs.present == 'true' && github.ref == 'refs/heads/main' && vars.NITHIDESK_TEST_DATABASE_URL == ''
+        shell: bash
+        run: echo "::warning::NITHIDESK_TEST_DATABASE_URL is not configured; the integration and authorisation suite was skipped."
+
+  web:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: [self-hosted, nithidesk]
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Install
+        shell: bash
+        run: pnpm install --frozen-lockfile
+      - name: i18n (no hardcoded strings, key parity)
+        shell: bash
+        run: pnpm lint:i18n
+      - name: Test
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: pnpm test
+      - name: Build
+        shell: bash
+        run: pnpm build

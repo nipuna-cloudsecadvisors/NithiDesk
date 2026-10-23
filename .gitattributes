@@ -1,0 +1,9 @@
+# Keep line endings stable across Windows and Linux checkouts. Migrations are
+# checksummed, so their bytes must not depend on the machine.
+* text=auto eol=lf
+*.sql text eol=lf
+*.go text eol=lf
+*.ttf binary
+*.woff2 binary
+*.png binary
+*.pdf binary
