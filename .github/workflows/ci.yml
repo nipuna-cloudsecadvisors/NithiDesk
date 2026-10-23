@@ -4,6 +4,10 @@ name: CI
 # The repository is public: fork pull requests must never run on this machine.
 # The `if:` guards below are defence in depth only; the real control is the repo
 # setting "Require approval for all external contributors" (Settings → Actions).
+#
+# Pull requests get a quick check only (docs, vet, build, i18n lint, web build).
+# The full test suite, including the integration and authorisation gate, runs
+# on pushes to main and on manual dispatch (Actions → CI → Run workflow).
 
 on:
   push:
@@ -60,7 +64,7 @@ jobs:
       # provides NITHIDESK_TEST_DATABASE_URL (a role allowed to CREATE
       # DATABASE); without it the suite reports itself skipped.
       - name: Test
-        if: steps.detect.outputs.present == 'true'
+        if: steps.detect.outputs.present == 'true' && github.event_name != 'pull_request'
         shell: bash
         env:
           NITHIDESK_TEST_DATABASE_URL: ${{ vars.NITHIDESK_TEST_DATABASE_URL }}
@@ -88,6 +92,7 @@ jobs:
         shell: bash
         run: pnpm lint:i18n
       - name: Test
+        if: github.event_name != 'pull_request'
         shell: bash
         run: pnpm test
       - name: Build
